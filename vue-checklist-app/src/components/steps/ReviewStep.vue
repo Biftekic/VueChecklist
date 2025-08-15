@@ -245,10 +245,10 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistsStore } from '@/stores/checklists'
 import { useRouter } from 'vue-router'
 
-const checklistStore = useChecklistStore()
+const checklistStore = useChecklistsStore()
 const router = useRouter()
 
 const expandedPanels = ref(['client', 'property', 'tasks'])

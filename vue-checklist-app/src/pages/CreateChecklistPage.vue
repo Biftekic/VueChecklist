@@ -46,19 +46,19 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistsStore } from '@/stores/checklists'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // Import step components
 import PropertyDetailsStep from '@/components/checklist/PropertyDetailsStep.vue'
 import RoomSelectionStep from '@/components/checklist/RoomSelectionStep.vue'
 import TaskSelectionStep from '@/components/checklist/TaskSelectionStep.vue'
-import ClientInfoStep from '@/components/steps/ClientInfoStep.vue'
+import ClientInfoStep from '@/components/checklist/ClientInfoStep.vue'
 import ReviewStep from '@/components/steps/ReviewStep.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
-const checklistStore = useChecklistStore()
+const checklistStore = useChecklistsStore()
 
 const currentStep = computed(() => appStore.currentStep)
 const stepProgress = computed(() => appStore.stepProgress)
