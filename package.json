@@ -1,26 +1,11 @@
 {
-  "name": "vue-checklist-app",
+  "name": "vue-checklist-monorepo",
   "private": true,
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@mdi/font": "^7.4.47",
-    "dexie": "^4.0.10",
-    "fuse.js": "^7.0.0",
-    "pinia": "^2.2.8",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "vuetify": "^3.4.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "sass": "^1.83.1",
-    "vite": "^6.0.5",
-    "vite-plugin-vuetify": "^2.0.4"
+    "dev": "cd vue-checklist-app && npm run dev",
+    "build": "cd vue-checklist-app && npm install && npm run build",
+    "preview": "cd vue-checklist-app && npm run preview",
+    "install": "cd vue-checklist-app && npm install"
   }
 }
