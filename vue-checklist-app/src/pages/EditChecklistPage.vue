@@ -185,42 +185,34 @@
           <v-card-title class="text-h6">
             <v-icon class="mr-2">mdi-clock-outline</v-icon>
             Time Adjustments
+            <v-spacer />
+            <v-btn
+              color="primary"
+              size="small"
+              variant="tonal"
+              @click="timeAdjustmentDialog = true"
+            >
+              <v-icon start>mdi-tune</v-icon>
+              Adjust Time
+            </v-btn>
           </v-card-title>
           <v-card-text>
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="checklist.conditionModifier"
-                  :items="conditionModifiers"
-                  label="Property Condition"
-                  variant="outlined"
-                  density="compact"
-                  item-title="label"
-                  item-value="value"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="checklist.teamSize"
-                  :items="teamSizes"
-                  label="Team Size"
-                  variant="outlined"
-                  density="compact"
-                  item-title="label"
-                  item-value="value"
-                />
-              </v-col>
-            </v-row>
-            
             <v-alert
               type="info"
               variant="tonal"
               density="compact"
             >
-              Adjusted Time: <strong>{{ adjustedTotalTime }}</strong>
-              <span v-if="timeAdjustmentPercent !== 0" class="ml-2">
-                ({{ timeAdjustmentPercent > 0 ? '+' : '' }}{{ timeAdjustmentPercent }}%)
-              </span>
+              <div class="d-flex justify-space-between">
+                <span>Base Time: <strong>{{ formattedTotalTime }}</strong></span>
+                <span>Adjusted Time: <strong>{{ formattedAdjustedTime }}</strong></span>
+              </div>
+              <v-divider class="my-2" v-if="timeAdjustmentPercent !== 0" />
+              <div v-if="timeAdjustmentPercent !== 0" class="text-center">
+                Adjustment: 
+                <strong :class="timeAdjustmentPercent > 0 ? 'text-error' : 'text-success'">
+                  {{ timeAdjustmentPercent > 0 ? '+' : '' }}{{ timeAdjustmentPercent }}%
+                </strong>
+              </div>
             </v-alert>
           </v-card-text>
         </v-card>
@@ -257,34 +249,19 @@
     </v-container>
 
     <!-- Task Manager Dialog -->
-    <v-dialog
+    <TaskManagerDialog
       v-model="taskManagerDialog"
-      fullscreen
-      transition="dialog-bottom-transition"
-    >
-      <v-card>
-        <v-toolbar color="primary" dark>
-          <v-btn icon @click="taskManagerDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-          <v-toolbar-title>Manage Tasks</v-toolbar-title>
-          <v-spacer />
-          <v-btn variant="text" @click="saveTaskChanges">
-            Save
-          </v-btn>
-        </v-toolbar>
-        
-        <v-container>
-          <!-- Enhanced Task Selection Component can be embedded here -->
-          <EnhancedTaskSelectionStep 
-            v-if="taskManagerDialog"
-            :edit-mode="true"
-            :existing-tasks="checklist.tasks"
-            @update="updateTasks"
-          />
-        </v-container>
-      </v-card>
-    </v-dialog>
+      :tasks="checklist.tasks"
+      @update:tasks="updateTasks"
+    />
+    
+    <!-- Time Adjustment Modal -->
+    <TimeAdjustmentModal
+      v-model="timeAdjustmentDialog"
+      :base-time="baseTotalTime"
+      :adjustments="timeAdjustments"
+      @apply="applyTimeAdjustments"
+    />
 
     <!-- Unsaved Changes Dialog -->
     <v-dialog v-model="unsavedDialog" max-width="400">
@@ -317,7 +294,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { useChecklistsStore } from '@/stores/checklists'
 import { useAppStore } from '@/stores/app'
 import MainLayout from '@/layouts/MainLayout.vue'
-import EnhancedTaskSelectionStep from '@/components/checklist/EnhancedTaskSelectionStep.vue'
+import TaskManagerDialog from '@/components/checklist/TaskManagerDialog.vue'
+import TimeAdjustmentModal from '@/components/checklist/TimeAdjustmentModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -333,6 +311,14 @@ const originalChecklist = ref(null)
 const taskManagerDialog = ref(false)
 const unsavedDialog = ref(false)
 const hasChanges = ref(false)
+const timeAdjustmentDialog = ref(false)
+const timeAdjustments = ref({
+  condition: 1.0,
+  teamSize: 1.0,
+  equipment: 1.0,
+  experience: 1.0,
+  customMultiplier: 1.0
+})
 
 // Options
 const propertyTypes = [
@@ -372,19 +358,6 @@ const frequencies = [
   'Quarterly'
 ]
 
-const conditionModifiers = [
-  { label: 'Light Cleaning', value: 0.7 },
-  { label: 'Standard', value: 1.0 },
-  { label: 'Deep Cleaning', value: 1.5 },
-  { label: 'First-time/Heavy', value: 2.0 }
-]
-
-const teamSizes = [
-  { label: 'Solo Cleaner', value: 1.0 },
-  { label: '2-Person Team', value: 0.75 },
-  { label: '3+ Person Team', value: 0.6 }
-]
-
 // Computed
 const getRoomSummary = computed(() => {
   if (!checklist.value?.tasks) return []
@@ -413,9 +386,13 @@ const baseTotalTime = computed(() => {
 })
 
 const adjustedTotalTime = computed(() => {
-  const condition = checklist.value?.conditionModifier || 1.0
-  const team = checklist.value?.teamSize || 1.0
-  return Math.round(baseTotalTime.value * condition * team)
+  const multiplier = 
+    timeAdjustments.value.condition *
+    timeAdjustments.value.teamSize *
+    timeAdjustments.value.equipment *
+    timeAdjustments.value.experience *
+    timeAdjustments.value.customMultiplier
+  return Math.round(baseTotalTime.value * multiplier)
 })
 
 const timeAdjustmentPercent = computed(() => {
@@ -425,6 +402,14 @@ const timeAdjustmentPercent = computed(() => {
 
 const formattedTotalTime = computed(() => {
   const minutes = baseTotalTime.value
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return `${hours}h ${mins}min`
+})
+
+const formattedAdjustedTime = computed(() => {
+  const minutes = adjustedTotalTime.value
   if (minutes < 60) return `${minutes} min`
   const hours = Math.floor(minutes / 60)
   const mins = minutes % 60
@@ -448,9 +433,10 @@ const loadChecklist = async () => {
     checklist.value = { ...data }
     originalChecklist.value = JSON.parse(JSON.stringify(data))
     
-    // Set defaults if not present
-    checklist.value.conditionModifier = checklist.value.conditionModifier || 1.0
-    checklist.value.teamSize = checklist.value.teamSize || 1.0
+    // Load time adjustments if present
+    if (checklist.value.timeAdjustments) {
+      timeAdjustments.value = { ...checklist.value.timeAdjustments }
+    }
     
   } catch (err) {
     console.error('Error loading checklist:', err)
@@ -469,10 +455,12 @@ const updateTasks = (tasks) => {
   hasChanges.value = true
 }
 
-const saveTaskChanges = () => {
-  taskManagerDialog.value = false
+const applyTimeAdjustments = (adjustments) => {
+  timeAdjustments.value = { ...adjustments }
+  checklist.value.timeAdjustments = { ...adjustments }
   hasChanges.value = true
 }
+
 
 const saveChanges = async () => {
   try {
