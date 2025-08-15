@@ -5,7 +5,7 @@
   # Directory to publish
   publish = "vue-checklist-app/dist"
   
-  # Node version
+  # Node version - Removed NODE_ENV to allow devDependencies during build
   environment = { NODE_VERSION = "20" }
 
 # Production deployment context
