@@ -411,8 +411,7 @@ const shareChecklist = async () => {
 }
 
 const editChecklist = () => {
-  // TODO: Implement edit mode
-  appStore.showSnackbar('Edit mode coming soon', 'info')
+  router.push(`/checklist/${checklist.value.id}/edit`)
 }
 
 const confirmDelete = async () => {

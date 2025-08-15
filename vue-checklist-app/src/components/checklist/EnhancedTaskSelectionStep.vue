@@ -372,8 +372,8 @@
           </v-window-item>
         </v-window>
 
-        <!-- Navigation Buttons -->
-        <v-row class="mt-6">
+        <!-- Navigation Buttons (hidden in edit mode) -->
+        <v-row v-if="!editMode" class="mt-6">
           <v-col cols="6">
             <v-btn
               variant="outlined"
@@ -398,6 +398,22 @@
             </v-btn>
           </v-col>
         </v-row>
+        
+        <!-- Save button for edit mode -->
+        <v-row v-else class="mt-6">
+          <v-col>
+            <v-btn
+              color="primary"
+              size="large"
+              block
+              :disabled="totalSelectedTasks === 0"
+              @click="handleNext"
+            >
+              <v-icon start>mdi-check</v-icon>
+              Apply Changes
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-container>
@@ -416,7 +432,18 @@ import {
 import { cleaningTasksDatabase } from '@/data/cleaningTasksDatabase'
 import Fuse from 'fuse.js'
 
-const emit = defineEmits(['next', 'back'])
+const props = defineProps({
+  editMode: {
+    type: Boolean,
+    default: false
+  },
+  existingTasks: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['next', 'back', 'update'])
 const checklistStore = useChecklistStore()
 
 // State
@@ -430,8 +457,16 @@ const expandedTasks = ref({}) // Track expanded state of tasks
 const professionalMode = ref(false)
 const selectedFrequencies = ref([]) // For frequency filtering
 
-// Get selected rooms from store
+// Get selected rooms from store or existing tasks in edit mode
 const selectedRooms = computed(() => {
+  if (props.editMode && props.existingTasks.length > 0) {
+    // Extract unique rooms from existing tasks
+    const roomSet = new Set(props.existingTasks.map(task => task.room))
+    return Array.from(roomSet).map(roomName => ({
+      name: roomName,
+      isCustom: false
+    }))
+  }
   const rooms = checklistStore.currentChecklist?.selectedRooms || []
   // Enhance rooms with tasks
   return rooms.map(room => {
@@ -482,15 +517,24 @@ onMounted(() => {
     }
   })
   
-  // Load any previously selected tasks
-  const existing = checklistStore.currentChecklist?.selectedTasks
-  if (existing) {
-    existing.forEach(task => {
-      if (selectedTasks.value[task.room]) {
-        selectedTasks.value[task.room].push(task)
-      }
-    })
+  // Load existing tasks based on mode
+  let tasksToLoad = []
+  if (props.editMode) {
+    // In edit mode, load from props
+    tasksToLoad = props.existingTasks || []
+  } else {
+    // In create mode, load from store
+    tasksToLoad = checklistStore.currentChecklist?.selectedTasks || []
   }
+  
+  // Populate selected tasks
+  tasksToLoad.forEach(task => {
+    const roomName = task.room
+    if (!selectedTasks.value[roomName]) {
+      selectedTasks.value[roomName] = []
+    }
+    selectedTasks.value[roomName].push(task)
+  })
 })
 
 // Get filtered tasks based on search and frequency
@@ -724,10 +768,14 @@ const handleNext = () => {
     })
   })
   
-  // Update store
-  checklistStore.updateSelectedTasks(allTasks)
-  
-  emit('next')
+  if (props.editMode) {
+    // In edit mode, emit update event
+    emit('update', allTasks)
+  } else {
+    // In create mode, update store and proceed
+    checklistStore.updateSelectedTasks(allTasks)
+    emit('next')
+  }
 }
 </script>
 
