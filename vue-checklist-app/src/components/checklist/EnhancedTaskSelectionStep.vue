@@ -7,78 +7,67 @@
       </v-card-title>
       
       <v-card-subtitle>
-        Search and add tasks to each room in your checklist
+        Choose tasks to include in your checklist
       </v-card-subtitle>
 
       <v-card-text>
-        <!-- Global Search with Room Filter -->
-        <v-row class="mb-4">
-          <v-col cols="12" md="6">
-            <v-text-field
-              v-model="globalSearchQuery"
-              label="Search all tasks..."
-              variant="outlined"
-              density="comfortable"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              @input="performGlobalSearch"
-              hint="Search by task name, category, tools, or chemicals"
-              persistent-hint
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="roomFilter"
-              :items="availableRooms"
-              label="Filter by room"
-              variant="outlined"
-              density="comfortable"
-              clearable
-              prepend-inner-icon="mdi-door"
-            />
-          </v-col>
-          <v-col cols="12" md="3">
-            <v-select
-              v-model="categoryFilter"
-              :items="taskCategories"
-              label="Filter by category"
-              variant="outlined"
-              density="comfortable"
-              clearable
-              prepend-inner-icon="mdi-tag"
-            />
-          </v-col>
-        </v-row>
-
-        <!-- Quick Add from Search Results -->
-        <v-expand-transition>
-          <v-card v-if="globalSearchResults.length > 0" variant="outlined" class="mb-4">
-            <v-card-title class="text-subtitle-1">
-              Search Results ({{ globalSearchResults.length }} tasks found)
-            </v-card-title>
-            <v-card-text class="pa-0">
-              <v-list density="compact" max-height="300" class="overflow-y-auto">
-                <v-list-item
-                  v-for="task in globalSearchResults"
-                  :key="task.id"
-                  @click="showQuickAddDialog(task)"
+        <!-- Professional Mode Toggle -->
+        <v-card variant="outlined" class="mb-4">
+          <v-card-text>
+            <v-row align="center">
+              <v-col cols="auto">
+                <v-switch
+                  v-model="professionalMode"
+                  color="primary"
+                  hide-details
                 >
-                  <template v-slot:prepend>
-                    <v-icon size="small">mdi-plus-circle</v-icon>
-                  </template>
-                  <v-list-item-title>{{ task.name }}</v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip size="x-small" class="mr-1">{{ task.category }}</v-chip>
-                    <v-chip size="x-small" variant="outlined">{{ task.estimatedTime }} min</v-chip>
-                    <span class="ml-2 text-caption">
-                      Available in: {{ task.rooms.join(', ') }}
+                  <template v-slot:label>
+                    <span class="font-weight-medium">
+                      Professional Mode
+                      <v-tooltip location="top">
+                        <template v-slot:activator="{ props }">
+                          <v-icon v-bind="props" size="small" class="ml-1">
+                            mdi-information-outline
+                          </v-icon>
+                        </template>
+                        <span>Switch between amateur and professional time estimates</span>
+                      </v-tooltip>
                     </span>
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
-        </v-expand-transition>
+                  </template>
+                </v-switch>
+              </v-col>
+              <v-col cols="auto">
+                <v-chip-group
+                  v-model="selectedFrequencies"
+                  multiple
+                  filter
+                >
+                  <v-chip
+                    v-for="(config, freq) in FREQUENCY_CONFIG"
+                    :key="freq"
+                    :color="config.color"
+                    variant="outlined"
+                    size="small"
+                  >
+                    <v-icon start size="small">{{ config.icon }}</v-icon>
+                    {{ config.label }}
+                  </v-chip>
+                </v-chip-group>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+
+        <!-- Search Bar -->
+        <v-text-field
+          v-model="searchQuery"
+          label="Search tasks..."
+          variant="outlined"
+          density="comfortable"
+          prepend-inner-icon="mdi-magnify"
+          clearable
+          class="mb-4"
+        />
 
         <!-- Summary -->
         <v-alert
@@ -89,15 +78,18 @@
         >
           <div class="d-flex justify-space-between">
             <span>
-              <strong>{{ totalSelectedTasks }}</strong> tasks selected across <strong>{{ selectedRooms.length }}</strong> rooms
+              <strong>{{ totalSelectedTasks }}</strong> tasks selected
             </span>
             <span>
               Estimated time: <strong>{{ formattedTotalTime }}</strong>
+              <span class="text-caption ml-2">
+                ({{ professionalMode ? 'Professional' : 'Amateur' }} estimate)
+              </span>
             </span>
           </div>
         </v-alert>
 
-        <!-- Room Tabs with Search -->
+        <!-- Room Tabs -->
         <v-tabs
           v-model="activeRoom"
           color="primary"
@@ -126,74 +118,116 @@
             :key="roomIndex"
             :value="roomIndex"
           >
-            <!-- Room-specific search -->
-            <v-text-field
-              v-model="roomSearchQuery"
-              :label="`Search tasks for ${room.name}...`"
-              variant="outlined"
-              density="compact"
-              prepend-inner-icon="mdi-magnify"
-              clearable
-              class="mb-3"
-              @input="performRoomSearch(room)"
-            />
+            <div v-if="room.isCustom" class="text-center py-8">
+              <v-icon size="64" color="grey">mdi-playlist-plus</v-icon>
+              <p class="text-h6 mt-4">Custom Room: {{ room.name }}</p>
+              <p class="text-body-2 text-grey">Add custom tasks below</p>
+              
+              <!-- Custom Task Input -->
+              <v-card variant="outlined" class="mt-4">
+                <v-card-text>
+                  <v-row align="center">
+                    <v-col cols="12" md="6">
+                      <v-text-field
+                        v-model="customTaskName"
+                        label="Task name"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-text-field
+                        v-model.number="customTaskTime"
+                        label="Time (min)"
+                        type="number"
+                        variant="outlined"
+                        density="compact"
+                        hide-details
+                      />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                      <v-btn
+                        color="primary"
+                        block
+                        @click="addCustomTask(room)"
+                        :disabled="!customTaskName || !customTaskTime"
+                      >
+                        Add Task
+                      </v-btn>
+                    </v-col>
+                  </v-row>
+                </v-card-text>
+              </v-card>
 
-            <!-- Quick Actions -->
-            <v-row class="mb-3">
-              <v-col cols="auto">
-                <v-btn
-                  size="small"
-                  variant="outlined"
-                  @click="selectAllInRoom(room)"
-                  :disabled="getAvailableTasksForRoom(room).length === 0"
-                >
-                  Select All
-                </v-btn>
-              </v-col>
-              <v-col cols="auto">
-                <v-btn
-                  size="small"
-                  variant="outlined"
-                  @click="deselectAllInRoom(room)"
-                  :disabled="getSelectedTasksForRoom(room).length === 0"
-                >
-                  Deselect All
-                </v-btn>
-              </v-col>
-              <v-col cols="auto">
-                <v-btn
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                  @click="openTaskBrowser(room)"
-                >
-                  <v-icon start>mdi-database-search</v-icon>
-                  Browse All Tasks
-                </v-btn>
-              </v-col>
-              <v-col cols="auto">
-                <v-btn
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                  @click="openCustomTaskDialog(room)"
-                >
-                  <v-icon start>mdi-plus</v-icon>
-                  Add Custom Task
-                </v-btn>
-              </v-col>
-            </v-row>
-
-            <!-- Template Tasks (if available) -->
-            <div v-if="room.tasks && room.tasks.length > 0">
-              <v-chip class="mb-2" size="small" color="primary">
-                Template Tasks ({{ room.tasks.length }})
-              </v-chip>
-              <v-list density="compact">
+              <!-- Custom Tasks List -->
+              <v-list v-if="customTasks[room.name]?.length > 0" class="mt-4">
                 <v-list-item
-                  v-for="(task, taskIndex) in getFilteredRoomTasks(room)"
-                  :key="`template-${taskIndex}`"
+                  v-for="(task, idx) in customTasks[room.name]"
+                  :key="idx"
+                >
+                  <template v-slot:prepend>
+                    <v-checkbox-btn
+                      :model-value="true"
+                      @click="removeCustomTask(room.name, idx)"
+                    />
+                  </template>
+                  <v-list-item-title>{{ task.name }}</v-list-item-title>
+                  <template v-slot:append>
+                    <span class="text-caption">{{ task.estimatedTime }} min</span>
+                  </template>
+                </v-list-item>
+              </v-list>
+            </div>
+
+            <div v-else>
+              <!-- Quick Actions -->
+              <v-row class="mb-3">
+                <v-col cols="auto">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    @click="selectAllInRoom(room)"
+                  >
+                    Select All
+                  </v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    @click="deselectAllInRoom(room)"
+                  >
+                    Deselect All
+                  </v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    @click="selectByFrequency(room, 'DAILY')"
+                  >
+                    Select Daily
+                  </v-btn>
+                </v-col>
+                <v-col cols="auto">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    @click="selectByFrequency(room, 'WEEKLY')"
+                  >
+                    Select Weekly
+                  </v-btn>
+                </v-col>
+              </v-row>
+
+              <!-- Enhanced Tasks List -->
+              <v-list>
+                <v-list-item
+                  v-for="(task, taskIndex) in getFilteredTasks(room)"
+                  :key="taskIndex"
                   @click="toggleTask(room, task)"
+                  class="enhanced-task-item"
                 >
                   <template v-slot:prepend>
                     <v-checkbox-btn
@@ -202,64 +236,138 @@
                     />
                   </template>
                   
-                  <v-list-item-title>
-                    {{ task.name }}
-                  </v-list-item-title>
-                  
-                  <v-list-item-subtitle>
-                    <v-chip size="x-small" class="mr-1" variant="outlined">
-                      {{ getAdjustedTime(task.estimatedTime) }} min
-                    </v-chip>
-                    <span v-if="task.chemicals?.length" class="mr-2">
-                      <v-icon size="x-small">mdi-beaker</v-icon>
-                      {{ task.chemicals.join(', ') }}
-                    </span>
-                    <span v-if="task.tools?.length">
-                      <v-icon size="x-small">mdi-tools</v-icon>
-                      {{ task.tools.join(', ') }}
-                    </span>
-                  </v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </div>
+                  <div class="flex-grow-1">
+                    <v-list-item-title class="d-flex align-center">
+                      {{ task.name }}
+                      
+                      <!-- Frequency Badge -->
+                      <v-chip
+                        v-if="task.frequency"
+                        size="x-small"
+                        :color="FREQUENCY_CONFIG[task.frequency]?.color"
+                        class="ml-2"
+                      >
+                        <v-icon start size="x-small">
+                          {{ FREQUENCY_CONFIG[task.frequency]?.icon }}
+                        </v-icon>
+                        {{ FREQUENCY_CONFIG[task.frequency]?.label }}
+                      </v-chip>
+                      
+                      <!-- Priority Badge -->
+                      <v-chip
+                        v-if="task.priority"
+                        size="x-small"
+                        :color="PRIORITY_CONFIG[task.priority]?.color"
+                        variant="tonal"
+                        class="ml-1"
+                      >
+                        <v-icon start size="x-small">
+                          {{ PRIORITY_CONFIG[task.priority]?.icon }}
+                        </v-icon>
+                        {{ task.priority }}
+                      </v-chip>
 
-            <!-- Selected Tasks for Room -->
-            <div class="mt-4" v-if="getSelectedTasksForRoom(room).length > 0">
-              <v-chip class="mb-2" size="small" color="success">
-                Selected Tasks ({{ getSelectedTasksForRoom(room).length }})
-              </v-chip>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="(task, idx) in getSelectedTasksForRoom(room)"
-                  :key="`selected-${idx}`"
-                >
-                  <template v-slot:prepend>
-                    <v-checkbox-btn
-                      :model-value="true"
-                      @click="removeTask(room, task)"
-                    />
+                      <!-- Safety Warning -->
+                      <v-icon
+                        v-if="task.safety?.warnings?.length"
+                        size="small"
+                        color="warning"
+                        class="ml-2"
+                      >
+                        mdi-alert
+                      </v-icon>
+                    </v-list-item-title>
+                    
+                    <v-list-item-subtitle>
+                      <v-chip
+                        size="x-small"
+                        class="mr-1"
+                        variant="outlined"
+                      >
+                        {{ getTaskTime(task) }} min
+                      </v-chip>
+                      <span v-if="task.chemicals?.length">
+                        <v-icon size="x-small">mdi-beaker</v-icon>
+                        {{ getChemicalNames(task.chemicals) }}
+                      </span>
+                      <span v-if="task.tools?.length" class="ml-2">
+                        <v-icon size="x-small">mdi-tools</v-icon>
+                        {{ getToolNames(task.tools) }}
+                      </span>
+                    </v-list-item-subtitle>
+
+                    <!-- Expandable Details -->
+                    <v-expand-transition>
+                      <div v-if="expandedTasks[task.id]">
+                        <v-divider class="my-2" />
+                        
+                        <!-- Steps -->
+                        <div v-if="task.steps?.length" class="mb-3">
+                          <div class="text-caption font-weight-bold mb-1">
+                            <v-icon size="small">mdi-format-list-numbered</v-icon>
+                            Steps:
+                          </div>
+                          <ol class="task-steps pl-4">
+                            <li v-for="(step, idx) in task.steps" :key="idx" class="text-caption">
+                              {{ step }}
+                            </li>
+                          </ol>
+                        </div>
+
+                        <!-- Safety Information -->
+                        <div v-if="task.safety" class="mb-3">
+                          <v-alert
+                            type="warning"
+                            density="compact"
+                            variant="tonal"
+                            class="text-caption"
+                          >
+                            <div v-if="task.safety.ppe?.length">
+                              <strong>PPE Required:</strong> {{ task.safety.ppe.join(', ') }}
+                            </div>
+                            <div v-if="task.safety.warnings?.length">
+                              <strong>Warnings:</strong> {{ task.safety.warnings.join(', ') }}
+                            </div>
+                          </v-alert>
+                        </div>
+
+                        <!-- Quality Standards -->
+                        <div v-if="task.standards" class="mb-2">
+                          <div class="text-caption font-weight-bold mb-1">
+                            <v-icon size="small">mdi-check-circle</v-icon>
+                            Quality Standards:
+                          </div>
+                          <div class="text-caption">
+                            <div v-if="task.standards.visual">
+                              <strong>Visual:</strong> {{ task.standards.visual }}
+                            </div>
+                            <div v-if="task.standards.touch">
+                              <strong>Touch:</strong> {{ task.standards.touch }}
+                            </div>
+                            <div v-if="task.standards.smell">
+                              <strong>Smell:</strong> {{ task.standards.smell }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </v-expand-transition>
+                  </div>
+
+                  <!-- Expand Button -->
+                  <template v-slot:append>
+                    <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      @click.stop="toggleExpand(task.id)"
+                    >
+                      <v-icon>
+                        {{ expandedTasks[task.id] ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+                      </v-icon>
+                    </v-btn>
                   </template>
-                  <v-list-item-title>
-                    {{ task.name }}
-                    <v-chip v-if="task.isCustom" size="x-small" color="orange" class="ml-2">
-                      Custom
-                    </v-chip>
-                  </v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip size="x-small" variant="outlined">
-                      {{ getAdjustedTime(task.estimatedTime) }} min
-                    </v-chip>
-                    <span v-if="task.category" class="ml-2">{{ task.category }}</span>
-                  </v-list-item-subtitle>
                 </v-list-item>
               </v-list>
-            </div>
-
-            <!-- No tasks message -->
-            <div v-if="getSelectedTasksForRoom(room).length === 0" class="text-center py-8">
-              <v-icon size="64" color="grey">mdi-playlist-plus</v-icon>
-              <p class="text-h6 mt-4">No tasks selected for {{ room.name }}</p>
-              <p class="text-body-2 text-grey">Use the search or browse to add tasks</p>
             </div>
           </v-window-item>
         </v-window>
@@ -292,195 +400,86 @@
         </v-row>
       </v-card-text>
     </v-card>
-
-    <!-- Quick Add Dialog -->
-    <v-dialog v-model="quickAddDialog" max-width="500">
-      <v-card>
-        <v-card-title>Add Task to Room</v-card-title>
-        <v-card-text>
-          <p class="mb-4">
-            <strong>Task:</strong> {{ selectedTask?.name }}<br>
-            <strong>Category:</strong> {{ selectedTask?.category }}<br>
-            <strong>Time:</strong> {{ selectedTask?.estimatedTime }} minutes
-          </p>
-          <v-select
-            v-model="quickAddRoom"
-            :items="compatibleRooms"
-            label="Select room to add this task"
-            variant="outlined"
-            density="comfortable"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="quickAddDialog = false">Cancel</v-btn>
-          <v-btn color="primary" @click="quickAddTask" :disabled="!quickAddRoom">
-            Add Task
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Task Browser Dialog -->
-    <v-dialog v-model="taskBrowserDialog" max-width="800">
-      <v-card>
-        <v-card-title>
-          Browse All Tasks for {{ browserRoom?.name }}
-        </v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="browserSearchQuery"
-            label="Search tasks..."
-            variant="outlined"
-            density="compact"
-            prepend-inner-icon="mdi-magnify"
-            clearable
-            class="mb-3"
-          />
-          <v-list density="compact" max-height="400" class="overflow-y-auto">
-            <v-list-item
-              v-for="task in filteredBrowserTasks"
-              :key="task.id"
-              @click="addTaskFromBrowser(task)"
-            >
-              <template v-slot:prepend>
-                <v-checkbox-btn
-                  :model-value="isTaskSelectedById(browserRoom, task.id)"
-                  @click.stop="toggleTaskFromBrowser(task)"
-                />
-              </template>
-              <v-list-item-title>{{ task.name }}</v-list-item-title>
-              <v-list-item-subtitle>
-                <v-chip size="x-small" class="mr-1">{{ task.category }}</v-chip>
-                <v-chip size="x-small" variant="outlined">{{ task.estimatedTime }} min</v-chip>
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="taskBrowserDialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <!-- Custom Task Dialog -->
-    <v-dialog v-model="customTaskDialog" max-width="500">
-      <v-card>
-        <v-card-title>Add Custom Task to {{ customTaskRoom?.name }}</v-card-title>
-        <v-card-text>
-          <v-text-field
-            v-model="customTaskName"
-            label="Task name"
-            variant="outlined"
-            density="comfortable"
-            class="mb-3"
-          />
-          <v-text-field
-            v-model.number="customTaskTime"
-            label="Estimated time (minutes)"
-            type="number"
-            variant="outlined"
-            density="comfortable"
-            class="mb-3"
-          />
-          <v-text-field
-            v-model="customTaskChemicals"
-            label="Chemicals (comma separated)"
-            variant="outlined"
-            density="comfortable"
-            class="mb-3"
-            hint="e.g., All-purpose cleaner, Disinfectant"
-          />
-          <v-text-field
-            v-model="customTaskTools"
-            label="Tools (comma separated)"
-            variant="outlined"
-            density="comfortable"
-            hint="e.g., Mop, Bucket, Cloth"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn @click="customTaskDialog = false">Cancel</v-btn>
-          <v-btn 
-            color="primary" 
-            @click="addCustomTask"
-            :disabled="!customTaskName || !customTaskTime"
-          >
-            Add Task
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useChecklistStore } from '@/stores/checklist'
-import Fuse from 'fuse.js'
 import { 
-  cleaningTasksDatabase, 
-  searchTasks, 
+  enhancedCleaningTasks, 
   getTasksByRoom,
-  getAllCategories,
-  getAllRooms 
-} from '@/data/cleaningTasksDatabase'
+  calculateAdjustedTime,
+  FREQUENCY_CONFIG,
+  PRIORITY_CONFIG 
+} from '@/data/enhancedCleaningTasks'
+import { cleaningTasksDatabase } from '@/data/cleaningTasksDatabase'
+import Fuse from 'fuse.js'
 
 const emit = defineEmits(['next', 'back'])
 const checklistStore = useChecklistStore()
 
 // State
 const activeRoom = ref(0)
-const globalSearchQuery = ref('')
-const roomSearchQuery = ref('')
-const browserSearchQuery = ref('')
-const roomFilter = ref(null)
-const categoryFilter = ref(null)
+const searchQuery = ref('')
 const selectedTasks = ref({}) // { roomName: [tasks] }
-const globalSearchResults = ref([])
-const roomSearchResults = ref({})
-
-// Dialog states
-const quickAddDialog = ref(false)
-const taskBrowserDialog = ref(false)
-const customTaskDialog = ref(false)
-const selectedTask = ref(null)
-const quickAddRoom = ref(null)
-const browserRoom = ref(null)
-const customTaskRoom = ref(null)
-
-// Custom task fields
+const customTasks = ref({}) // { roomName: [customTasks] }
 const customTaskName = ref('')
 const customTaskTime = ref(15)
-const customTaskChemicals = ref('')
-const customTaskTools = ref('')
+const expandedTasks = ref({}) // Track expanded state of tasks
+const professionalMode = ref(false)
+const selectedFrequencies = ref([]) // For frequency filtering
 
 // Get selected rooms from store
 const selectedRooms = computed(() => {
-  return checklistStore.currentChecklist?.selectedRooms || []
-})
-
-// Get available rooms and categories
-const availableRooms = computed(() => getAllRooms())
-const taskCategories = computed(() => getAllCategories())
-
-// Get compatible rooms for quick add
-const compatibleRooms = computed(() => {
-  if (!selectedTask.value) return []
-  return selectedRooms.value
-    .filter(room => 
-      selectedTask.value.rooms.includes(room.name) || 
-      selectedTask.value.rooms.includes('All Rooms')
-    )
-    .map(room => room.name)
+  const rooms = checklistStore.currentChecklist?.selectedRooms || []
+  // Enhance rooms with tasks
+  return rooms.map(room => {
+    if (!room.isCustom) {
+      // Get enhanced tasks for this room
+      const enhancedTasksForRoom = getTasksByRoom(room.name)
+      // Fallback to original tasks if no enhanced tasks
+      const originalTasksForRoom = cleaningTasksDatabase.filter(task => 
+        task.rooms?.includes(room.name) || task.rooms?.includes('All Rooms')
+      )
+      
+      // Merge enhanced and original tasks
+      const allTasks = [
+        ...enhancedTasksForRoom,
+        ...originalTasksForRoom.filter(origTask => 
+          !enhancedTasksForRoom.some(enhTask => 
+            enhTask.name.toLowerCase() === origTask.name.toLowerCase()
+          )
+        ).map(task => ({
+          ...task,
+          id: `orig-${task.id}`,
+          frequency: 'WEEKLY',
+          priority: 'medium',
+          estimatedTime: {
+            amateur: { min: task.estimatedTime, max: task.estimatedTime + 5 },
+            professional: { min: Math.round(task.estimatedTime * 0.6), max: Math.round(task.estimatedTime * 0.8) }
+          }
+        }))
+      ]
+      
+      return {
+        ...room,
+        tasks: allTasks
+      }
+    }
+    return room
+  })
 })
 
 // Initialize selected tasks
 onMounted(() => {
+  // Initialize structure for each room
   selectedRooms.value.forEach(room => {
-    selectedTasks.value[room.name] = []
+    if (!room.isCustom) {
+      selectedTasks.value[room.name] = []
+    } else {
+      customTasks.value[room.name] = []
+    }
   })
   
   // Load any previously selected tasks
@@ -494,83 +493,43 @@ onMounted(() => {
   }
 })
 
-// Global search
-const performGlobalSearch = () => {
-  if (!globalSearchQuery.value || globalSearchQuery.value.trim().length < 2) {
-    globalSearchResults.value = []
-    return
-  }
-  
-  let results = searchTasks(globalSearchQuery.value.trim(), roomFilter.value)
-  
-  if (categoryFilter.value) {
-    results = results.filter(task => task.category === categoryFilter.value)
-  }
-  
-  globalSearchResults.value = results.slice(0, 20) // Limit to 20 results
-}
-
-// Room-specific search
-const performRoomSearch = (room) => {
-  if (!roomSearchQuery.value || roomSearchQuery.value.trim().length < 2) {
-    roomSearchResults.value[room.name] = []
-    return
-  }
-  
-  const results = searchTasks(roomSearchQuery.value.trim(), room.name)
-  roomSearchResults.value[room.name] = results
-}
-
-// Get filtered tasks for room
-const getFilteredRoomTasks = (room) => {
+// Get filtered tasks based on search and frequency
+const getFilteredTasks = (room) => {
   if (!room.tasks) return []
   
-  if (!roomSearchQuery.value || roomSearchQuery.value.trim() === '') {
-    return room.tasks
+  let tasks = room.tasks
+  
+  // Filter by frequency if selected
+  if (selectedFrequencies.value.length > 0) {
+    const frequencies = Object.keys(FREQUENCY_CONFIG).filter((_, idx) => 
+      selectedFrequencies.value.includes(idx)
+    )
+    tasks = tasks.filter(task => frequencies.includes(task.frequency))
   }
   
-  const fuse = new Fuse(room.tasks, {
-    keys: ['name', 'chemicals', 'tools'],
+  // Filter by search query
+  if (!searchQuery.value || searchQuery.value.trim() === '') {
+    return tasks
+  }
+  
+  const fuse = new Fuse(tasks, {
+    keys: ['name', 'category', 'chemicals.name', 'tools.name'],
     threshold: 0.4,
     includeScore: true,
     minMatchCharLength: 2,
-    ignoreLocation: true
+    ignoreLocation: true,
+    shouldSort: true
   })
   
-  const results = fuse.search(roomSearchQuery.value.trim())
+  const results = fuse.search(searchQuery.value.trim())
   return results.map(result => result.item)
 }
 
-// Get available tasks for room from database
-const getAvailableTasksForRoom = (room) => {
-  return getTasksByRoom(room.name)
-}
-
-// Get filtered browser tasks
-const filteredBrowserTasks = computed(() => {
-  if (!browserRoom.value) return []
-  
-  let tasks = getAvailableTasksForRoom(browserRoom.value)
-  
-  if (browserSearchQuery.value && browserSearchQuery.value.trim().length >= 2) {
-    const fuse = new Fuse(tasks, {
-      keys: ['name', 'category', 'chemicals', 'tools'],
-      threshold: 0.4
-    })
-    tasks = fuse.search(browserSearchQuery.value.trim()).map(r => r.item)
-  }
-  
-  return tasks
-})
-
 // Check if task is selected
 const isTaskSelected = (room, task) => {
-  return selectedTasks.value[room.name]?.some(t => t.name === task.name) || false
-}
-
-// Check if task is selected by ID
-const isTaskSelectedById = (room, taskId) => {
-  return selectedTasks.value[room.name]?.some(t => t.id === taskId) || false
+  return selectedTasks.value[room.name]?.some(t => 
+    t.id === task.id || t.name === task.name
+  ) || false
 }
 
 // Toggle task selection
@@ -579,7 +538,9 @@ const toggleTask = (room, task) => {
     selectedTasks.value[room.name] = []
   }
   
-  const index = selectedTasks.value[room.name].findIndex(t => t.name === task.name)
+  const index = selectedTasks.value[room.name].findIndex(t => 
+    t.id === task.id || t.name === task.name
+  )
   if (index > -1) {
     selectedTasks.value[room.name].splice(index, 1)
   } else {
@@ -590,18 +551,15 @@ const toggleTask = (room, task) => {
   }
 }
 
-// Remove task
-const removeTask = (room, task) => {
-  const index = selectedTasks.value[room.name].findIndex(t => t.name === task.name)
-  if (index > -1) {
-    selectedTasks.value[room.name].splice(index, 1)
-  }
+// Toggle task expansion
+const toggleExpand = (taskId) => {
+  expandedTasks.value[taskId] = !expandedTasks.value[taskId]
 }
 
 // Select all tasks in room
 const selectAllInRoom = (room) => {
   if (room.tasks) {
-    selectedTasks.value[room.name] = room.tasks.map(task => ({
+    selectedTasks.value[room.name] = getFilteredTasks(room).map(task => ({
       ...task,
       room: room.name
     }))
@@ -613,115 +571,91 @@ const deselectAllInRoom = (room) => {
   selectedTasks.value[room.name] = []
 }
 
+// Select tasks by frequency
+const selectByFrequency = (room, frequency) => {
+  if (room.tasks) {
+    const tasksToAdd = room.tasks
+      .filter(task => task.frequency === frequency)
+      .map(task => ({
+        ...task,
+        room: room.name
+      }))
+    
+    // Add only tasks not already selected
+    tasksToAdd.forEach(task => {
+      if (!isTaskSelected(room, task)) {
+        selectedTasks.value[room.name].push(task)
+      }
+    })
+  }
+}
+
 // Get selected tasks for a room
 const getSelectedTasksForRoom = (room) => {
+  if (room.isCustom) {
+    return customTasks.value[room.name] || []
+  }
   return selectedTasks.value[room.name] || []
 }
 
-// Show quick add dialog
-const showQuickAddDialog = (task) => {
-  selectedTask.value = task
-  quickAddRoom.value = null
-  quickAddDialog.value = true
-}
-
-// Quick add task to room
-const quickAddTask = () => {
-  if (!quickAddRoom.value || !selectedTask.value) return
-  
-  if (!selectedTasks.value[quickAddRoom.value]) {
-    selectedTasks.value[quickAddRoom.value] = []
-  }
-  
-  const taskExists = selectedTasks.value[quickAddRoom.value].some(
-    t => t.id === selectedTask.value.id || t.name === selectedTask.value.name
-  )
-  
-  if (!taskExists) {
-    selectedTasks.value[quickAddRoom.value].push({
-      ...selectedTask.value,
-      room: quickAddRoom.value
-    })
-  }
-  
-  quickAddDialog.value = false
-}
-
-// Open task browser
-const openTaskBrowser = (room) => {
-  browserRoom.value = room
-  browserSearchQuery.value = ''
-  taskBrowserDialog.value = true
-}
-
-// Add task from browser
-const addTaskFromBrowser = (task) => {
-  toggleTaskFromBrowser(task)
-}
-
-// Toggle task from browser
-const toggleTaskFromBrowser = (task) => {
-  if (!browserRoom.value) return
-  
-  if (!selectedTasks.value[browserRoom.value.name]) {
-    selectedTasks.value[browserRoom.value.name] = []
-  }
-  
-  const index = selectedTasks.value[browserRoom.value.name].findIndex(t => t.id === task.id)
-  if (index > -1) {
-    selectedTasks.value[browserRoom.value.name].splice(index, 1)
-  } else {
-    selectedTasks.value[browserRoom.value.name].push({
-      ...task,
-      room: browserRoom.value.name
-    })
-  }
-}
-
-// Open custom task dialog
-const openCustomTaskDialog = (room) => {
-  customTaskRoom.value = room
-  customTaskName.value = ''
-  customTaskTime.value = 15
-  customTaskChemicals.value = ''
-  customTaskTools.value = ''
-  customTaskDialog.value = true
-}
-
 // Add custom task
-const addCustomTask = () => {
-  if (!customTaskRoom.value || !customTaskName.value || !customTaskTime.value) return
-  
-  if (!selectedTasks.value[customTaskRoom.value.name]) {
-    selectedTasks.value[customTaskRoom.value.name] = []
+const addCustomTask = (room) => {
+  if (!customTasks.value[room.name]) {
+    customTasks.value[room.name] = []
   }
   
-  const chemicals = customTaskChemicals.value 
-    ? customTaskChemicals.value.split(',').map(c => c.trim()).filter(c => c)
-    : []
-    
-  const tools = customTaskTools.value
-    ? customTaskTools.value.split(',').map(t => t.trim()).filter(t => t)
-    : []
-  
-  selectedTasks.value[customTaskRoom.value.name].push({
-    id: `custom-${Date.now()}`,
+  customTasks.value[room.name].push({
     name: customTaskName.value,
     estimatedTime: customTaskTime.value,
-    chemicals: chemicals,
-    tools: tools,
-    category: 'Custom',
-    room: customTaskRoom.value.name,
+    room: room.name,
+    chemicals: [],
+    tools: [],
     isCustom: true
   })
   
-  customTaskDialog.value = false
+  customTaskName.value = ''
+  customTaskTime.value = 15
 }
 
-// Get adjusted time with multiplier
-const getAdjustedTime = (baseTime) => {
+// Remove custom task
+const removeCustomTask = (roomName, index) => {
+  if (customTasks.value[roomName]) {
+    customTasks.value[roomName].splice(index, 1)
+  }
+}
+
+// Get task time based on professional mode
+const getTaskTime = (task) => {
+  if (task.estimatedTime?.amateur && task.estimatedTime?.professional) {
+    return calculateAdjustedTime(task, professionalMode.value)
+  }
+  // Fallback for original tasks
   const multiplier = checklistStore.getTimeMultiplier()
-  return Math.round(baseTime * multiplier)
+  const baseTime = task.estimatedTime?.min || task.estimatedTime || 15
+  const adjustedTime = professionalMode.value ? baseTime * 0.7 : baseTime
+  return Math.round(adjustedTime * multiplier)
+}
+
+// Get chemical names
+const getChemicalNames = (chemicals) => {
+  if (Array.isArray(chemicals)) {
+    if (typeof chemicals[0] === 'string') {
+      return chemicals.slice(0, 2).join(', ')
+    }
+    return chemicals.slice(0, 2).map(c => c.name).join(', ')
+  }
+  return ''
+}
+
+// Get tool names
+const getToolNames = (tools) => {
+  if (Array.isArray(tools)) {
+    if (typeof tools[0] === 'string') {
+      return tools.slice(0, 2).join(', ')
+    }
+    return tools.slice(0, 2).map(t => t.name).join(', ')
+  }
+  return ''
 }
 
 // Calculate totals
@@ -730,16 +664,24 @@ const totalSelectedTasks = computed(() => {
   Object.values(selectedTasks.value).forEach(tasks => {
     total += tasks.length
   })
+  Object.values(customTasks.value).forEach(tasks => {
+    total += tasks.length
+  })
   return total
 })
 
 const totalTime = computed(() => {
   let total = 0
-  const multiplier = checklistStore.getTimeMultiplier()
   
   Object.values(selectedTasks.value).forEach(tasks => {
     tasks.forEach(task => {
-      total += (task.estimatedTime || 15) * multiplier
+      total += getTaskTime(task)
+    })
+  })
+  
+  Object.values(customTasks.value).forEach(tasks => {
+    tasks.forEach(task => {
+      total += getTaskTime(task)
     })
   })
   
@@ -761,12 +703,23 @@ const handleNext = () => {
   // Combine all selected tasks
   const allTasks = []
   
+  // Add regular tasks
   Object.entries(selectedTasks.value).forEach(([roomName, tasks]) => {
     tasks.forEach(task => {
       allTasks.push({
         ...task,
         room: roomName,
-        estimatedTime: task.estimatedTime || 15
+        estimatedTime: getTaskTime(task)
+      })
+    })
+  })
+  
+  // Add custom tasks
+  Object.entries(customTasks.value).forEach(([roomName, tasks]) => {
+    tasks.forEach(task => {
+      allTasks.push({
+        ...task,
+        room: roomName
       })
     })
   })
@@ -776,19 +729,15 @@ const handleNext = () => {
   
   emit('next')
 }
-
-// Watch for filter changes
-watch([roomFilter, categoryFilter], () => {
-  performGlobalSearch()
-})
 </script>
 
 <style scoped>
-.v-list-item {
+.enhanced-task-item {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s;
 }
 
-.v-list-item:hover {
+.enhanced-task-item:hover {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
@@ -796,7 +745,11 @@ watch([roomFilter, categoryFilter], () => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.overflow-y-auto {
-  overflow-y: auto;
+.task-steps {
+  line-height: 1.5;
+}
+
+.task-steps li {
+  margin-bottom: 4px;
 }
 </style>

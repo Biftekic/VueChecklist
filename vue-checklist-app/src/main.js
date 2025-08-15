@@ -13,4 +13,15 @@ app.use(pinia)
 app.use(router)
 app.use(vuetify)
 
+// Register service worker for PWA
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(registration => {
+      console.log('Service Worker registered:', registration)
+    })
+    .catch(error => {
+      console.error('Service Worker registration failed:', error)
+    })
+}
+
 app.mount('#app')

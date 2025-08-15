@@ -1,0 +1,40 @@
+{
+  "name": "Cleaning Checklist App",
+  "short_name": "CleanCheck",
+  "description": "Professional cleaning checklist management app",
+  "theme_color": "#2196F3",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Create Checklist",
+      "short_name": "Create",
+      "description": "Create a new cleaning checklist",
+      "url": "/create",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "View Checklists",
+      "short_name": "Checklists",
+      "description": "View all saved checklists",
+      "url": "/checklists",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -361,8 +361,19 @@ const getRoomIcon = (roomName) => {
 
 // Generate PDF preview
 const generatePDF = () => {
-  // This will be implemented with the PDF service
-  console.log('Generating PDF preview...')
+  try {
+    // Import PDF service dynamically
+    import('@/services/pdfService').then((module) => {
+      const pdfService = module.default
+      const pdf = pdfService.generateChecklistPDF(checklist.value)
+      const filename = `${checklistName.value || 'checklist'}_preview.pdf`
+      pdf.save(filename)
+      checklistStore.showNotification('PDF generated successfully!', 'success')
+    })
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    checklistStore.showNotification('Failed to generate PDF', 'error')
+  }
 }
 
 // Save checklist
