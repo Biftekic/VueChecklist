@@ -132,12 +132,12 @@ const selectIndustry = (industry) => {
   // Store selected industry in new checklist
   checklistsStore.updateNewChecklist({ industry })
   // Navigate to create page with template
-  router.push(`/checklists/create?template=${industry}`)
+  router.push(`/create?template=${industry}`)
 }
 
 const createCustom = () => {
   // Navigate to create page without template
-  router.push('/checklists/create')
+  router.push('/create')
 }
 
 const getIndustryColor = (industry) => {

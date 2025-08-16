@@ -260,11 +260,11 @@ async function loadChecklists() {
 }
 
 function createNewChecklist() {
-  router.push('/checklists/create')
+  router.push('/create')
 }
 
 function openChecklist(checklist) {
-  router.push(`/checklists/${checklist.id}`)
+  router.push(`/checklist/${checklist.id}`)
 }
 
 function exportPDF(checklist) {

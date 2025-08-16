@@ -49,7 +49,7 @@
         <v-row>
           <v-col cols="6">
             <v-card
-              @click="navigateTo('/checklists/create')"
+              @click="navigateTo('/create')"
               class="pa-4 text-center"
               elevation="2"
               rounded="xl"
@@ -164,7 +164,7 @@
           <v-btn
             color="primary"
             class="mt-4"
-            @click="navigateTo('/checklists/create')"
+            @click="navigateTo('/create')"
           >
             Create Your First
           </v-btn>
@@ -261,7 +261,7 @@ const navigateTo = (path) => {
 }
 
 const viewChecklist = (id) => {
-  router.push(`/checklists/${id}`)
+  router.push(`/checklist/${id}`)
 }
 
 const formatDate = (date) => {

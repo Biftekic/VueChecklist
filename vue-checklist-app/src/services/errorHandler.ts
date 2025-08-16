@@ -4,7 +4,7 @@
  */
 
 import { useAppStore } from '@/stores/app'
-import { Router } from 'vue-router'
+import type { Router } from 'vue-router'
 
 export enum ErrorSeverity {
   LOW = 'low',
