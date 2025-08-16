@@ -441,12 +441,24 @@ const handleNext = () => {
 </script>
 
 <style scoped>
+.v-list {
+  padding: 8px;
+}
+
 .v-list-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 12px 8px !important;
+  min-height: 72px;
+  transition: all 0.2s;
 }
 
 .v-list-item:hover {
   background-color: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .v-tabs {

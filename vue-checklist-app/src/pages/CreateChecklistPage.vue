@@ -53,7 +53,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import PropertyDetailsStep from '@/components/checklist/PropertyDetailsStep.vue'
 import RoomSelectionStep from '@/components/checklist/RoomSelectionStep.vue'
 import EnhancedTaskSelectionStep from '@/components/checklist/EnhancedTaskSelectionStep.vue'
-import ClientInfoStep from '@/components/checklist/ClientInfoStep.vue'
+import ClientInfoStep from '@/components/steps/ClientInfoStep.vue'
 import ReviewStep from '@/components/steps/ReviewStep.vue'
 
 const router = useRouter()

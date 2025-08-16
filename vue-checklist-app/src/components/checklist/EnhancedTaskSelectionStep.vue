@@ -222,30 +222,57 @@
               </v-row>
 
               <!-- Enhanced Tasks List -->
-              <v-list>
+              <v-list class="task-list-container">
                 <v-list-item
                   v-for="(task, taskIndex) in getFilteredTasks(room)"
                   :key="taskIndex"
                   @click="toggleTask(room, task)"
-                  class="enhanced-task-item"
+                  class="enhanced-task-item mb-2 rounded-lg"
                 >
                   <template v-slot:prepend>
                     <v-checkbox-btn
                       :model-value="isTaskSelected(room, task)"
                       @click.stop="toggleTask(room, task)"
+                      class="mr-3"
                     />
                   </template>
                   
                   <div class="flex-grow-1">
-                    <v-list-item-title class="d-flex align-center">
-                      {{ task.name }}
+                    <v-list-item-title class="d-flex align-center flex-wrap mb-1">
+                      <span class="task-name mr-2">{{ task.name }}</span>
                       
+                      <!-- Time Badge - Most Important -->
+                      <v-chip
+                        size="small"
+                        color="primary"
+                        variant="tonal"
+                        class="mr-2"
+                      >
+                        <v-icon start size="small">mdi-clock-outline</v-icon>
+                        {{ getTaskTime(task) }} min
+                      </v-chip>
+
+                      <!-- Safety Warning - High Priority -->
+                      <v-chip
+                        v-if="task.safety?.warnings?.length"
+                        size="small"
+                        color="warning"
+                        variant="tonal"
+                        class="mr-2"
+                      >
+                        <v-icon start size="small">mdi-alert</v-icon>
+                        Safety
+                      </v-chip>
+                    </v-list-item-title>
+                    
+                    <v-list-item-subtitle class="d-flex align-center flex-wrap mt-1">
                       <!-- Frequency Badge -->
                       <v-chip
                         v-if="task.frequency"
                         size="x-small"
                         :color="FREQUENCY_CONFIG[task.frequency]?.color"
-                        class="ml-2"
+                        variant="outlined"
+                        class="mr-2 mb-1"
                       >
                         <v-icon start size="x-small">
                           {{ FREQUENCY_CONFIG[task.frequency]?.icon }}
@@ -258,41 +285,20 @@
                         v-if="task.priority"
                         size="x-small"
                         :color="PRIORITY_CONFIG[task.priority]?.color"
-                        variant="tonal"
-                        class="ml-1"
+                        variant="outlined"
+                        class="mr-2 mb-1"
                       >
-                        <v-icon start size="x-small">
-                          {{ PRIORITY_CONFIG[task.priority]?.icon }}
-                        </v-icon>
                         {{ task.priority }}
                       </v-chip>
-
-                      <!-- Safety Warning -->
-                      <v-icon
-                        v-if="task.safety?.warnings?.length"
-                        size="small"
-                        color="warning"
-                        class="ml-2"
-                      >
-                        mdi-alert
-                      </v-icon>
-                    </v-list-item-title>
-                    
-                    <v-list-item-subtitle>
-                      <v-chip
-                        size="x-small"
-                        class="mr-1"
-                        variant="outlined"
-                      >
-                        {{ getTaskTime(task) }} min
-                      </v-chip>
-                      <span v-if="task.chemicals?.length">
+                      
+                      <!-- Tools & Chemicals Summary -->
+                      <span v-if="task.chemicals?.length" class="text-caption mr-3">
                         <v-icon size="x-small">mdi-beaker</v-icon>
-                        {{ getChemicalNames(task.chemicals) }}
+                        {{ task.chemicals.length }} chemical{{ task.chemicals.length > 1 ? 's' : '' }}
                       </span>
-                      <span v-if="task.tools?.length" class="ml-2">
+                      <span v-if="task.tools?.length" class="text-caption">
                         <v-icon size="x-small">mdi-tools</v-icon>
-                        {{ getToolNames(task.tools) }}
+                        {{ task.tools.length }} tool{{ task.tools.length > 1 ? 's' : '' }}
                       </span>
                     </v-list-item-subtitle>
 
@@ -780,17 +786,43 @@ const handleNext = () => {
 </script>
 
 <style scoped>
+.task-list-container {
+  padding: 8px;
+}
+
 .enhanced-task-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: all 0.2s;
+  padding: 12px 8px !important;
+  min-height: 80px;
 }
 
 .enhanced-task-item:hover {
   background-color: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.enhanced-task-item.v-list-item--active {
+  background-color: rgba(25, 118, 210, 0.04);
+  border-color: rgba(25, 118, 210, 0.3);
+}
+
+.task-name {
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.4;
+  flex: 1 1 auto;
+  min-width: 200px;
 }
 
 .v-tabs {
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-chip-group {
+  gap: 8px;
 }
 
 .task-steps {
@@ -799,5 +831,20 @@ const handleNext = () => {
 
 .task-steps li {
   margin-bottom: 4px;
+}
+
+/* Improve chip visibility */
+.v-chip {
+  font-weight: 500;
+}
+
+/* Better spacing for list items */
+.v-list-item__content {
+  padding: 4px 0;
+}
+
+/* Ensure checkbox has proper spacing */
+.v-checkbox-btn {
+  margin-top: 0 !important;
 }
 </style>

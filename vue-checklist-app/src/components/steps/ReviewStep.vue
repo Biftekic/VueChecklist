@@ -35,6 +35,45 @@
           </v-card-text>
         </v-card>
 
+        <!-- Task Distribution by Category -->
+        <v-card variant="outlined" class="mb-4">
+          <v-card-title class="text-subtitle-1">
+            <v-icon size="small" class="mr-2">mdi-chart-pie</v-icon>
+            Task Distribution
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col v-for="(category, name) in tasksByCategory" :key="name" cols="6" sm="4" md="3">
+                <div class="text-center">
+                  <div class="text-h6 font-weight-bold text-primary">{{ category.count }}</div>
+                  <div class="text-caption">{{ name }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ formatTime(category.time) }}</div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+
+        <!-- Time by Room Breakdown -->
+        <v-card variant="outlined" class="mb-4">
+          <v-card-title class="text-subtitle-1">
+            <v-icon size="small" class="mr-2">mdi-clock-outline</v-icon>
+            Time by Room
+          </v-card-title>
+          <v-card-text>
+            <v-row>
+              <v-col v-for="room in roomTimeBreakdown" :key="room.name" cols="6" sm="4" md="3">
+                <div class="text-center">
+                  <v-icon size="small" color="primary">{{ getRoomIcon(room.name) }}</v-icon>
+                  <div class="text-subtitle-2 mt-1">{{ room.name }}</div>
+                  <div class="text-h6 font-weight-bold">{{ formatTime(room.time) }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ room.taskCount }} tasks</div>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+
         <!-- Client Information -->
         <v-expansion-panels v-model="expandedPanels" multiple class="mb-4">
           <v-expansion-panel value="client">
@@ -118,27 +157,37 @@
               Selected Tasks by Room
             </v-expansion-panel-title>
             <v-expansion-panel-text>
-              <v-list density="compact">
+              <v-list class="task-review-list">
                 <template v-for="(room, roomIndex) in selectedRoomsWithTasks" :key="roomIndex">
-                  <v-list-subheader>
+                  <v-list-subheader class="room-header">
                     <v-icon size="small" class="mr-2">{{ getRoomIcon(room.name) }}</v-icon>
-                    {{ room.name }} ({{ room.tasks.length }} tasks, {{ formatTime(room.totalTime) }})
+                    <span class="font-weight-medium">{{ room.name }}</span>
+                    <v-spacer></v-spacer>
+                    <v-chip size="small" variant="tonal" color="primary" class="mr-2">
+                      {{ room.tasks.length }} tasks
+                    </v-chip>
+                    <v-chip size="small" variant="tonal">
+                      {{ formatTime(room.totalTime) }}
+                    </v-chip>
                   </v-list-subheader>
                   <v-list-item
                     v-for="(task, taskIndex) in room.tasks"
                     :key="`${roomIndex}-${taskIndex}`"
-                    density="compact"
+                    class="task-review-item ml-4 mb-1"
                   >
                     <template v-slot:prepend>
-                      <v-icon size="x-small">mdi-checkbox-marked</v-icon>
+                      <v-icon size="small" color="primary">mdi-checkbox-marked-circle</v-icon>
                     </template>
-                    <v-list-item-title class="text-body-2">
+                    <v-list-item-title class="text-body-1">
                       {{ task.name }}
                     </v-list-item-title>
                     <template v-slot:append>
-                      <span class="text-caption">{{ formatTime(task.adjustedTime) }}</span>
+                      <v-chip size="small" variant="text" color="primary">
+                        {{ formatTime(task.adjustedTime) }}
+                      </v-chip>
                     </template>
                   </v-list-item>
+                  <v-divider v-if="roomIndex < selectedRoomsWithTasks.length - 1" class="my-3"></v-divider>
                 </template>
               </v-list>
             </v-expansion-panel-text>
@@ -312,6 +361,45 @@ const selectedRoomsWithTasks = computed(() => {
   return Object.values(rooms)
 })
 
+// Task breakdown by category
+const tasksByCategory = computed(() => {
+  const categories = {}
+  
+  checklist.value.selectedTasks?.forEach(task => {
+    const category = task.category || 'Uncategorized'
+    if (!categories[category]) {
+      categories[category] = {
+        count: 0,
+        time: 0
+      }
+    }
+    categories[category].count++
+    categories[category].time += task.adjustedTime || task.estimatedTime || 0
+  })
+  
+  return categories
+})
+
+// Time breakdown by room
+const roomTimeBreakdown = computed(() => {
+  const rooms = {}
+  
+  checklist.value.selectedTasks?.forEach(task => {
+    const roomName = task.room || 'General'
+    if (!rooms[roomName]) {
+      rooms[roomName] = {
+        name: roomName,
+        time: 0,
+        taskCount: 0
+      }
+    }
+    rooms[roomName].time += task.adjustedTime || task.estimatedTime || 0
+    rooms[roomName].taskCount++
+  })
+  
+  return Object.values(rooms).sort((a, b) => b.time - a.time)
+})
+
 // Get unique chemicals and tools
 const uniqueChemicals = computed(() => {
   const chemicals = new Set()
@@ -427,5 +515,29 @@ onMounted(() => {
 
 .v-chip {
   margin: 2px;
+}
+
+.task-review-list {
+  padding: 8px 0;
+}
+
+.room-header {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  padding: 12px 16px !important;
+  margin: 8px 0;
+  display: flex;
+  align-items: center;
+}
+
+.task-review-item {
+  padding: 8px 16px;
+  min-height: 48px;
+  transition: background-color 0.2s;
+}
+
+.task-review-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 4px;
 }
 </style>
