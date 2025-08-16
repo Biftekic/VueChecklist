@@ -87,7 +87,8 @@ export default defineConfig({
     host: true
   },
   build: {
-    chunkSizeWarningLimit: 500,
+    target: 'esnext', // Use modern JavaScript for faster builds
+    cssCodeSplit: false, // Combine CSS for simpler output
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -148,24 +149,12 @@ export default defineConfig({
       }
     },
     // Enable minification for production
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-        passes: 2,
-        pure_funcs: ['console.log', 'console.info', 'console.debug']
-      },
-      mangle: {
-        safari10: true
-      },
-      format: {
-        comments: false
-      }
-    },
-    // Source maps only for errors
-    sourcemap: 'hidden',
+    minify: 'esbuild', // Changed from 'terser' to 'esbuild' for faster builds
+    // Source maps disabled for faster builds
+    sourcemap: false,
     // Reports
-    reportCompressedSize: false
+    reportCompressedSize: false,
+    // Increase chunk size limit to reduce warnings
+    chunkSizeWarningLimit: 1000
   }
 })
