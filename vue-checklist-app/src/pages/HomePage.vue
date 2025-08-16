@@ -98,6 +98,23 @@
           
           <v-col cols="6">
             <v-card
+              @click="navigateTo('/inventory')"
+              class="pa-4 text-center"
+              elevation="2"
+              rounded="xl"
+            >
+              <v-icon size="48" color="success">
+                mdi-package-variant
+              </v-icon>
+              <v-card-title class="text-body-1">
+                Inventory
+              </v-card-title>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row class="mt-2">
+          <v-col cols="12">
+            <v-card
               @click="navigateTo('/settings')"
               class="pa-4 text-center"
               elevation="2"

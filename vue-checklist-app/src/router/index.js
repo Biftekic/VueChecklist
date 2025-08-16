@@ -24,7 +24,7 @@ const routes = [
   {
     path: '/checklist/:id',
     name: 'checklist-detail',
-    component: () => import('@/pages/ChecklistDetailPage.vue')
+    component: () => import('@/pages/ChecklistDetailPageEnhanced.vue')
   },
   {
     path: '/checklist/:id/edit',
@@ -35,6 +35,11 @@ const routes = [
     path: '/settings',
     name: 'settings',
     component: () => import('@/pages/SettingsPage.vue')
+  },
+  {
+    path: '/inventory',
+    name: 'inventory',
+    component: () => import('@/pages/InventoryPage.vue')
   }
 ]
 

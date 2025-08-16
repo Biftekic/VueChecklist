@@ -5,12 +5,20 @@ export const db = new Dexie('VueChecklistDB')
 
 // Define database schema
 db.version(1).stores({
-  checklists: '++id, name, clientName, industry, createdAt, updatedAt, status, frequency',
+  checklists: '++id, name, clientName, industry, createdAt, updatedAt, status, frequency, qualityScore, lastInspection',
   templates: '++id, name, industry, isCustom, createdAt, updatedAt',
   tasks: '++id, checklistId, templateId, name, room, estimatedTime, chemicals, tools',
   clients: '++id, name, email, phone, address, createdAt',
   settings: 'key, value',
-  syncQueue: '++id, type, action, data, timestamp, status'
+  syncQueue: '++id, type, action, data, timestamp, status',
+  inspections: '++id, checklistId, inspectionDate, qualityScore, categories, issues, photos, signOff, createdAt',
+  taskTemplates: '++id, name, category, estimatedTime, chemicals, tools, steps, safety, quality, createdAt, updatedAt, isPublic, usageCount',
+  inventory: '++id, name, category, type, unit, currentStock, reorderPoint, reorderQuantity, costPerUnit, createdAt, updatedAt',
+  equipment: '++id, name, category, status, purchaseDate, lastMaintenance, maintenanceInterval, lifespan, costPerUnit, createdAt, updatedAt',
+  usageHistory: '++id, supplyId, checklistId, quantity, date, cost',
+  reorderAlerts: '++id, supplyId, supplyName, currentStock, reorderPoint, reorderQuantity, status, createdAt, completedAt',
+  maintenanceAlerts: '++id, equipmentId, equipmentName, type, priority, status, createdAt, completedAt',
+  maintenanceHistory: '++id, equipmentId, alertId, date, type, notes, cost'
 })
 
 // Checklist status enum
