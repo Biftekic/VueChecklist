@@ -838,11 +838,6 @@ const handleNext = () => {
   font-weight: 500;
 }
 
-/* Better spacing for list items */
-.v-list-item__content {
-  padding: 4px 0;
-}
-
 /* Ensure checkbox has proper spacing */
 .v-checkbox-btn {
   margin-top: 0 !important;
