@@ -87,26 +87,85 @@ export default defineConfig({
     host: true
   },
   build: {
-    chunkSizeWarningLimit: 600,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            // Core framework
             if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
               return 'vendor-vue';
             }
+            // UI framework
             if (id.includes('vuetify')) {
               return 'vendor-vuetify';
             }
+            // Utilities
             if (id.includes('fuse.js') || id.includes('dexie')) {
               return 'vendor-utils';
             }
+            // PDF generation
+            if (id.includes('jspdf')) {
+              return 'vendor-pdf';
+            }
+            // Validation
+            if (id.includes('zod')) {
+              return 'vendor-validation';
+            }
+            // Icons
+            if (id.includes('@mdi')) {
+              return 'vendor-icons';
+            }
           }
+          // Split data and templates
           if (id.includes('/src/data/')) {
             return 'data-templates';
           }
+          // Split large components
+          if (id.includes('/src/components/checklist/')) {
+            return 'components-checklist';
+          }
+          if (id.includes('/src/components/common/')) {
+            return 'components-common';
+          }
+        },
+        // Better chunking strategy
+        chunkFileNames: (chunkInfo) => {
+          const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
+          return `js/[name]-${facadeModuleId}-[hash].js`;
+        },
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name.split('.');
+          const ext = info[info.length - 1];
+          if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
+            return `images/[name]-[hash][extname]`;
+          } else if (/woff|woff2|eot|ttf|otf/i.test(ext)) {
+            return `fonts/[name]-[hash][extname]`;
+          } else {
+            return `assets/[name]-[hash][extname]`;
+          }
         }
       }
-    }
+    },
+    // Enable minification for production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        passes: 2,
+        pure_funcs: ['console.log', 'console.info', 'console.debug']
+      },
+      mangle: {
+        safari10: true
+      },
+      format: {
+        comments: false
+      }
+    },
+    // Source maps only for errors
+    sourcemap: 'hidden',
+    // Reports
+    reportCompressedSize: false
   }
 })

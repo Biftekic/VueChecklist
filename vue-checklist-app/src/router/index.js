@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { performanceMonitor } from '@/services/performanceMonitor'
 
 const routes = [
   {
@@ -49,6 +50,14 @@ const router = createRouter({
   scrollBehavior() {
     return { top: 0 }
   }
+})
+
+// Track route changes for performance monitoring
+router.beforeEach((to, from, next) => {
+  if (from.name) {
+    performanceMonitor.trackRouteChange(from.path, to.path)
+  }
+  next()
 })
 
 export default router

@@ -23,18 +23,24 @@ export const useAppStore = defineStore('app', () => {
     isOnline.value = value
   }
   
-  function showNotification(message, type = 'info', duration = 3000) {
+  function showNotification(options) {
+    // Handle both string and object arguments
+    if (typeof options === 'string') {
+      options = { message: options, type: 'info', duration: 3000 }
+    }
+    
     notification.value = {
-      message,
-      type,
-      duration,
+      message: options.message,
+      type: options.type || 'info',
+      duration: options.duration || 3000,
+      action: options.action,
       timestamp: Date.now()
     }
     
-    if (duration > 0) {
+    if (notification.value.duration > 0) {
       setTimeout(() => {
         notification.value = null
-      }, duration)
+      }, notification.value.duration)
     }
   }
   

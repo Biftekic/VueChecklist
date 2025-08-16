@@ -4,18 +4,22 @@ import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 
 // Define custom theme colors based on our design system
-const customTheme = {
+const lightTheme = {
   dark: false,
   colors: {
     primary: '#1976D2',
     'primary-light': '#42A5F5',
     'primary-dark': '#1565C0',
+    secondary: '#424242',
     accent: '#00BCD4',
     success: '#4CAF50',
     warning: '#FF9800',
     error: '#F44336',
+    info: '#2196F3',
     background: '#FAFAFA',
     surface: '#FFFFFF',
+    'on-background': '#212121',
+    'on-surface': '#212121',
     'text-primary': '#212121',
     'text-secondary': '#757575',
     divider: '#E0E0E0',
@@ -31,13 +35,50 @@ const customTheme = {
   }
 }
 
+const darkTheme = {
+  dark: true,
+  colors: {
+    primary: '#42A5F5',
+    'primary-light': '#80D8FF',
+    'primary-dark': '#0D47A1',
+    secondary: '#BDBDBD',
+    accent: '#4DD0E1',
+    success: '#66BB6A',
+    warning: '#FFA726',
+    error: '#EF5350',
+    info: '#42A5F5',
+    background: '#121212',
+    surface: '#1E1E1E',
+    'on-background': '#FFFFFF',
+    'on-surface': '#FFFFFF',
+    'text-primary': '#FFFFFF',
+    'text-secondary': '#AAAAAA',
+    divider: '#333333',
+    
+    // Industry colors (adjusted for dark theme)
+    office: '#64B5F6',
+    residential: '#81C784',
+    medical: '#E57373',
+    hospitality: '#BA68C8',
+    restaurant: '#FFB74D',
+    retail: '#4DD0E1',
+    airbnb: '#FF8A80'
+  }
+}
+
 export default createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'customTheme',
+    defaultTheme: 'light',
     themes: {
-      customTheme
+      light: lightTheme,
+      dark: darkTheme
+    },
+    variations: {
+      colors: ['primary', 'secondary', 'accent'],
+      lighten: 2,
+      darken: 2
     }
   },
   defaults: {

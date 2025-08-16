@@ -18,6 +18,7 @@
       </v-app-bar-title>
       
       <template v-slot:append>
+        <ThemeToggle class="mr-2" />
         <slot name="actions"></slot>
       </template>
     </v-app-bar>
@@ -72,6 +73,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const props = defineProps({
   title: {

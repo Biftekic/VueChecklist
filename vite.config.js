@@ -17,5 +17,28 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-core': ['vue', 'pinia', 'vue-router'],
+          'vendor-ui': ['vuetify'],
+          'vendor-utils': ['fuse.js', 'dexie'],
+          'vendor-pdf': ['jspdf', 'jspdf-autotable'],
+          'data-templates': ['./src/data/cleaningTemplates.js']
+        }
+      }
+    },
+    // Enable minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
+    // Chunk size warnings
+    chunkSizeWarningLimit: 500
   }
 })

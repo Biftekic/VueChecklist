@@ -1,4 +1,5 @@
 import Dexie from 'dexie'
+import { runMigrations } from './db/migrations'
 
 // Create database instance
 export const db = new Dexie('VueChecklistDB')
@@ -18,7 +19,17 @@ db.version(1).stores({
   usageHistory: '++id, supplyId, checklistId, quantity, date, cost',
   reorderAlerts: '++id, supplyId, supplyName, currentStock, reorderPoint, reorderQuantity, status, createdAt, completedAt',
   maintenanceAlerts: '++id, equipmentId, equipmentName, type, priority, status, createdAt, completedAt',
-  maintenanceHistory: '++id, equipmentId, alertId, date, type, notes, cost'
+  maintenanceHistory: '++id, equipmentId, alertId, date, type, notes, cost',
+  _migrations: '++version, name, appliedAt, success, error'
+})
+
+// Initialize database and run migrations
+db.on('ready', async function() {
+  try {
+    await runMigrations()
+  } catch (error) {
+    console.error('Failed to run migrations:', error)
+  }
 })
 
 // Checklist status enum
