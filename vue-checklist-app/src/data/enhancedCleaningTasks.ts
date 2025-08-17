@@ -1,5 +1,127 @@
 // Enhanced cleaning tasks database with professional features
-export const enhancedCleaningTasks = [
+export interface TimeRange {
+  min: number
+  max: number
+}
+
+export interface TimeModifiers {
+  firstTime?: number
+  heavy_soil?: number
+  minimal?: number
+  largeArea?: number
+  manyWindows?: number
+}
+
+export interface EstimatedTime {
+  amateur: TimeRange
+  professional: TimeRange
+  modifiers: TimeModifiers
+}
+
+export interface Chemical {
+  name: string
+  type?: string
+  ph?: string
+  dilution?: string
+  dwellTime?: number
+  surfaces?: string[]
+  warnings?: string[]
+  epaNumber?: string
+  killClaims?: string[]
+  contactTime?: number
+  activeIngredient?: string
+  concentration?: string
+  application?: string
+}
+
+export interface Tool {
+  name: string
+  type?: string
+  colorCode?: string
+  quantity?: number
+  size?: string
+  replaceFrequency?: string
+  width?: string
+  edge?: string
+  reach?: string
+  attachments?: string[]
+  capacity?: string
+  features?: string[]
+  blade?: string
+}
+
+export interface Safety {
+  ppe: string[]
+  warnings?: string[]
+  msds?: string[]
+}
+
+export interface MeasurableStandards {
+  atpReading?: string
+  bacteriaCount?: string
+}
+
+export interface Standards {
+  visual: string
+  touch: string
+  smell: string
+  measurable?: MeasurableStandards
+}
+
+export type TaskFrequency = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY'
+
+export type TaskPriority = 'high' | 'medium' | 'low'
+
+export type TaskCategory = 
+  | 'sanitization'
+  | 'deep-cleaning'
+  | 'maintenance'
+  | 'floor-care'
+  | 'detail-cleaning'
+
+export type RoomName = 
+  | 'Bathroom'
+  | 'Powder Room'
+  | 'Kitchen'
+  | 'Living Room'
+  | 'Bedroom'
+  | 'Office'
+  | 'Family Room'
+  | 'Hallway'
+  | 'Stairs'
+  | 'Entryway'
+  | 'Laundry Room'
+  | 'All Rooms'
+
+export interface EnhancedCleaningTask {
+  id: string
+  name: string
+  category: TaskCategory
+  frequency: TaskFrequency
+  priority: TaskPriority
+  estimatedTime: EstimatedTime
+  steps: string[]
+  chemicals: Chemical[]
+  tools: Tool[]
+  safety: Safety
+  standards: Standards
+  rooms: RoomName[]
+}
+
+export interface FrequencyConfig {
+  label: string
+  color: string
+  icon: string
+  description: string
+}
+
+export interface PriorityConfig {
+  label: string
+  color: string
+  icon: string
+}
+
+export const enhancedCleaningTasks: EnhancedCleaningTask[] = [
   // Bathroom Tasks - High Priority, Daily/Weekly Frequency
   {
     id: 'task-001',
@@ -618,42 +740,46 @@ export const enhancedCleaningTasks = [
     },
     rooms: ['All Rooms']
   }
-]
+];
 
 // Helper function to get tasks by frequency
-export const getTasksByFrequency = (frequency) => {
-  return enhancedCleaningTasks.filter(task => task.frequency === frequency)
-}
+export const getTasksByFrequency = (frequency: TaskFrequency): EnhancedCleaningTask[] => {
+  return enhancedCleaningTasks.filter(task => task.frequency === frequency);
+};
 
 // Helper function to get tasks by priority
-export const getTasksByPriority = (priority) => {
-  return enhancedCleaningTasks.filter(task => task.priority === priority)
-}
+export const getTasksByPriority = (priority: TaskPriority): EnhancedCleaningTask[] => {
+  return enhancedCleaningTasks.filter(task => task.priority === priority);
+};
 
 // Helper function to get tasks by room
-export const getTasksByRoom = (room) => {
+export const getTasksByRoom = (room: RoomName): EnhancedCleaningTask[] => {
   return enhancedCleaningTasks.filter(task => 
     task.rooms.includes(room) || task.rooms.includes('All Rooms')
-  )
-}
+  );
+};
 
 // Helper function to calculate adjusted time
-export const calculateAdjustedTime = (task, isProfessional = false, modifiers = {}) => {
-  const timeRange = isProfessional ? task.estimatedTime.professional : task.estimatedTime.amateur
-  let baseTime = (timeRange.min + timeRange.max) / 2
+export const calculateAdjustedTime = (
+  task: EnhancedCleaningTask, 
+  isProfessional: boolean = false, 
+  modifiers: Record<string, boolean> = {}
+): number => {
+  const timeRange = isProfessional ? task.estimatedTime.professional : task.estimatedTime.amateur;
+  let baseTime = (timeRange.min + timeRange.max) / 2;
   
   // Apply modifiers
   Object.entries(modifiers).forEach(([key, value]) => {
-    if (task.estimatedTime.modifiers[key] && value) {
-      baseTime *= task.estimatedTime.modifiers[key]
+    if (task.estimatedTime.modifiers[key as keyof TimeModifiers] && value) {
+      baseTime *= task.estimatedTime.modifiers[key as keyof TimeModifiers]!;
     }
-  })
+  });
   
-  return Math.round(baseTime)
-}
+  return Math.round(baseTime);
+};
 
 // Frequency configuration
-export const FREQUENCY_CONFIG = {
+export const FREQUENCY_CONFIG: Record<TaskFrequency, FrequencyConfig> = {
   DAILY: {
     label: 'Daily',
     color: 'primary',
@@ -678,10 +804,10 @@ export const FREQUENCY_CONFIG = {
     icon: 'mdi-calendar-blank-multiple',
     description: 'Seasonal deep cleaning'
   }
-}
+};
 
 // Priority configuration
-export const PRIORITY_CONFIG = {
+export const PRIORITY_CONFIG: Record<TaskPriority, PriorityConfig> = {
   high: {
     label: 'High Priority',
     color: 'error',
@@ -697,4 +823,7 @@ export const PRIORITY_CONFIG = {
     color: 'info',
     icon: 'mdi-information'
   }
-}
+};
+
+// Export default
+export default enhancedCleaningTasks;

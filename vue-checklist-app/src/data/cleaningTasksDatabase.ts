@@ -1,5 +1,85 @@
 // Comprehensive cleaning tasks database with room associations
-export const cleaningTasksDatabase = [
+export interface CleaningTask {
+  id: number
+  name: string
+  description: string
+  detailedSteps: string[]
+  tips: string
+  safety: string
+  estimatedTime: number
+  chemicals: string[]
+  tools: string[]
+  category: TaskCategory
+  rooms: RoomType[]
+}
+
+export type TaskCategory = 
+  | 'Floor Care'
+  | 'Dusting'
+  | 'Windows'
+  | 'Waste Management'
+  | 'Sanitization'
+  | 'Detail Cleaning'
+  | 'Kitchen Appliances'
+  | 'Kitchen'
+  | 'Kitchen Organization'
+  | 'Bathroom'
+  | 'Bedroom'
+  | 'Bedroom Organization'
+  | 'Electronics'
+  | 'Living Room'
+  | 'Organization'
+  | 'Office'
+  | 'Office Organization'
+  | 'Laundry'
+  | 'Garage'
+  | 'Garage Organization'
+  | 'Outdoor'
+  | 'HVAC'
+  | 'Deep Cleaning'
+  | 'Furniture Care'
+  | 'Maintenance'
+  | 'Pet Care'
+  | 'Child Care'
+  | 'Fitness'
+
+export type RoomType = 
+  | 'Living Room'
+  | 'Bedroom'
+  | 'Guest Room'
+  | 'Office'
+  | 'Home Office'
+  | 'Hallway'
+  | 'Stairs'
+  | 'Kitchen'
+  | 'Bathroom'
+  | 'Powder Room'
+  | 'Entryway'
+  | 'Laundry Room'
+  | 'Garage'
+  | 'Basement'
+  | 'Patio'
+  | 'Balcony'
+  | 'Pantry'
+  | 'Family Room'
+  | 'Library'
+  | 'Walk-in Closet'
+  | 'Entertainment Center'
+  | 'Shed'
+  | 'Storage Room'
+  | 'Workshop'
+  | 'Deck'
+  | 'Driveway'
+  | 'Exterior'
+  | 'All Carpeted Rooms'
+  | 'Pet Areas'
+  | 'Playroom'
+  | 'Kids Bedroom'
+  | 'Home Gym'
+  | 'Attic'
+  | 'All Rooms'
+
+export const cleaningTasksDatabase: CleaningTask[] = [
   // Universal Tasks (can be used in any room)
   { id: 1, name: 'Vacuum carpet/rugs',
     description: "Thoroughly vacuum all carpeted areas including edges, corners, and under furniture where accessible. Use appropriate attachments for different surfaces.",
@@ -1219,27 +1299,27 @@ export const cleaningTasksDatabase = [
 ];
 
 // Helper function to search tasks by room
-export const getTasksByRoom = (roomName) => {
+export const getTasksByRoom = (roomName: RoomType): CleaningTask[] => {
   return cleaningTasksDatabase.filter(task => 
     task.rooms.includes(roomName) || task.rooms.includes('All Rooms')
   );
 };
 
 // Helper function to search tasks by category
-export const getTasksByCategory = (category) => {
+export const getTasksByCategory = (category: TaskCategory): CleaningTask[] => {
   return cleaningTasksDatabase.filter(task => task.category === category);
 };
 
 // Helper function to get all unique categories
-export const getAllCategories = () => {
-  const categories = new Set();
+export const getAllCategories = (): TaskCategory[] => {
+  const categories = new Set<TaskCategory>();
   cleaningTasksDatabase.forEach(task => categories.add(task.category));
   return Array.from(categories).sort();
 };
 
 // Helper function to get all unique rooms
-export const getAllRooms = () => {
-  const rooms = new Set();
+export const getAllRooms = (): RoomType[] => {
+  const rooms = new Set<RoomType>();
   cleaningTasksDatabase.forEach(task => {
     task.rooms.forEach(room => {
       if (room !== 'All Rooms') {
@@ -1251,7 +1331,7 @@ export const getAllRooms = () => {
 };
 
 // Helper function for fuzzy search across all tasks
-export const searchTasks = (query, roomFilter = null) => {
+export const searchTasks = (query: string, roomFilter: RoomType | null = null): CleaningTask[] => {
   const lowerQuery = query.toLowerCase();
   
   return cleaningTasksDatabase.filter(task => {
