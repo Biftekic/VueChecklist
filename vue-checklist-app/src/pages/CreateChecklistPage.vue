@@ -46,7 +46,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { useChecklistsStore } from '@/stores/checklistStore'
+import { useChecklistStore } from '@/stores/checklistStore'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // Import step components
@@ -58,7 +58,7 @@ import ReviewStep from '@/components/steps/ReviewStep.vue'
 
 const router = useRouter()
 const appStore = useAppStore()
-const checklistStore = useChecklistsStore()
+const checklistStore = useChecklistStore()
 
 const currentStep = computed(() => appStore.currentStep)
 const stepProgress = computed(() => appStore.stepProgress)

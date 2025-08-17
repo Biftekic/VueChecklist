@@ -122,7 +122,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklistsNormalized'
+import { useChecklistStore } from '@/stores/checklistsNormalized'
 import { useFuzzySearch } from '@/composables/useFuzzySearch'
 import { useLoading } from '@/composables/useLoading'
 import { dbOperations } from '@/services/database'
@@ -133,7 +133,7 @@ import ChecklistSkeleton from '@/components/skeletons/ChecklistSkeleton.vue'
 import { exportToPDF } from '@/services/pdfService'
 
 const router = useRouter()
-const checklistsStore = useChecklistsStore()
+const checklistsStore = useChecklistStore()
 const { isLoading, withLoading } = useLoading()
 
 // State

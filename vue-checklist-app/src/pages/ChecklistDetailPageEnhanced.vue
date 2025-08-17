@@ -335,7 +335,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklistStore'
+import { useChecklistStore } from '@/stores/checklistStore'
 import { useAppStore } from '@/stores/app'
 import MainLayout from '@/layouts/MainLayout.vue'
 import RouteVisualization from '@/components/route/RouteVisualization.vue'
@@ -345,7 +345,7 @@ import pdfService from '@/services/pdfService'
 
 const route = useRoute()
 const router = useRouter()
-const checklistsStore = useChecklistsStore()
+const checklistsStore = useChecklistStore()
 const appStore = useAppStore()
 
 // State

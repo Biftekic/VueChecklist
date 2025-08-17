@@ -291,7 +291,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklistStore'
+import { useChecklistStore } from '@/stores/checklistStore'
 import { useAppStore } from '@/stores/app'
 import MainLayout from '@/layouts/MainLayout.vue'
 import TaskManagerDialog from '@/components/checklist/TaskManagerDialog.vue'
@@ -299,7 +299,7 @@ import TimeAdjustmentModal from '@/components/checklist/TimeAdjustmentModal.vue'
 
 const route = useRoute()
 const router = useRouter()
-const checklistsStore = useChecklistsStore()
+const checklistsStore = useChecklistStore()
 const appStore = useAppStore()
 
 // State

@@ -213,11 +213,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklistStore'
+import { useChecklistStore } from '@/stores/checklistStore'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const checklistsStore = useChecklistsStore()
+const checklistsStore = useChecklistStore()
 
 const recentChecklists = ref([])
 const totalChecklists = ref(0)

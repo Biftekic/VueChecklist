@@ -11,7 +11,7 @@ import type {
 import { dbOperations } from '@/services/database'
 import { useLoading } from '@/composables/useLoading'
 
-export const useChecklistsStore = defineStore('checklistsNormalized', () => {
+export const useChecklistStore = defineStore('checklistsNormalized', () => {
   // State
   const state = ref<ChecklistsState>({
     byId: {},
