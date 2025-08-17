@@ -17,15 +17,42 @@
           <v-card class="pa-4">
             <v-card-title>Quick Actions</v-card-title>
             <v-card-text>
-              <v-btn color="primary" to="/create" block class="mb-2">
+              <v-btn color="primary" @click="navigateTo('/create')" block class="mb-2">
                 Create New Checklist
               </v-btn>
-              <v-btn color="secondary" to="/checklists" block class="mb-2">
+              <v-btn color="secondary" @click="navigateTo('/checklists')" block class="mb-2">
                 View All Checklists
               </v-btn>
-              <v-btn to="/templates" block>
+              <v-btn @click="navigateTo('/templates')" block>
                 Browse Templates
               </v-btn>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+      
+      <v-row class="mt-4">
+        <v-col cols="12">
+          <v-card class="pa-4">
+            <v-card-title>Navigation Menu</v-card-title>
+            <v-card-text>
+              <v-list>
+                <v-list-item @click="navigateTo('/checklists')">
+                  <v-list-item-title>📋 My Checklists</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="navigateTo('/templates')">
+                  <v-list-item-title>📄 Templates</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="navigateTo('/create')">
+                  <v-list-item-title>➕ Create New</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="navigateTo('/inventory')">
+                  <v-list-item-title>📦 Inventory</v-list-item-title>
+                </v-list-item>
+                <v-list-item @click="navigateTo('/settings')">
+                  <v-list-item-title>⚙️ Settings</v-list-item-title>
+                </v-list-item>
+              </v-list>
             </v-card-text>
           </v-card>
         </v-col>
@@ -35,5 +62,14 @@
 </template>
 
 <script setup>
-console.log('HomePage.vue loaded - simplified version without MainLayout')
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const navigateTo = (path) => {
+  console.log('Navigating to:', path)
+  router.push(path)
+}
+
+console.log('HomePage.vue loaded - with working navigation')
 </script>
