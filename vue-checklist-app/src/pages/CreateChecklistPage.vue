@@ -46,7 +46,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { useChecklistsStore } from '@/stores/checklists'
+import { useChecklistsStore } from '@/stores/checklistStore'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 // Import step components

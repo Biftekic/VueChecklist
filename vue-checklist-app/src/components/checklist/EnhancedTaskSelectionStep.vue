@@ -427,7 +427,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistStore } from '@/stores/checklistStore'
 import { 
   enhancedCleaningTasks, 
   getTasksByRoom,

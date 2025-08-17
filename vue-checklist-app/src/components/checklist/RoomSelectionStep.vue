@@ -154,7 +154,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistStore } from '@/stores/checklistStore'
 import { getRoomsByIndustry, calculateRoomTime as calcTime } from '@/data/templates'
 
 const emit = defineEmits(['next', 'back'])

@@ -185,7 +185,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistStore } from '@/stores/checklistStore'
 
 const checklistStore = useChecklistStore()
 const form = ref(null)

@@ -335,7 +335,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklists'
+import { useChecklistsStore } from '@/stores/checklistStore'
 import { useAppStore } from '@/stores/app'
 import MainLayout from '@/layouts/MainLayout.vue'
 import RouteVisualization from '@/components/route/RouteVisualization.vue'

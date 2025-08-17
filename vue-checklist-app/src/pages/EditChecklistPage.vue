@@ -291,7 +291,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklists'
+import { useChecklistsStore } from '@/stores/checklistStore'
 import { useAppStore } from '@/stores/app'
 import MainLayout from '@/layouts/MainLayout.vue'
 import TaskManagerDialog from '@/components/checklist/TaskManagerDialog.vue'

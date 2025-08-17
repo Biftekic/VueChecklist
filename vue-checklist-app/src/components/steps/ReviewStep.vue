@@ -294,7 +294,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useChecklistsStore } from '@/stores/checklists'
+import { useChecklistsStore } from '@/stores/checklistStore'
 import { useRouter } from 'vue-router'
 
 const checklistStore = useChecklistsStore()
