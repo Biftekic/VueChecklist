@@ -1,7 +1,9 @@
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import 'vuetify/styles'
+import { icons } from '@/utils/icons'
 
 // Define custom theme colors based on our design system
 const lightTheme = {
@@ -69,6 +71,26 @@ const darkTheme = {
 export default createVuetify({
   components,
   directives,
+  icons: {
+    defaultSet: 'mdi',
+    aliases: {
+      ...aliases,
+      // Map commonly used icons
+      home: icons.home,
+      menu: icons.menu,
+      settings: icons.settings,
+      search: icons.search,
+      add: icons.plus,
+      edit: icons.pencil,
+      delete: icons.delete,
+      save: icons.save,
+      close: icons.close,
+      check: icons.check
+    },
+    sets: {
+      mdi
+    }
+  },
   theme: {
     defaultTheme: 'light',
     themes: {

@@ -88,7 +88,7 @@ export default defineConfig({
   },
   build: {
     target: 'esnext', // Use modern JavaScript for faster builds
-    cssCodeSplit: false, // Combine CSS for simpler output
+    cssCodeSplit: true, // Enable CSS code splitting for better performance
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -149,9 +149,9 @@ export default defineConfig({
       }
     },
     // Enable minification for production
-    minify: 'esbuild', // Changed from 'terser' to 'esbuild' for faster builds
-    // Source maps disabled for faster builds
-    sourcemap: false,
+    minify: 'esbuild', // Using esbuild for faster builds
+    // Enable source maps for production debugging
+    sourcemap: 'hidden', // Generate source maps but don't reference them in the code
     // Reports
     reportCompressedSize: false,
     // Increase chunk size limit to reduce warnings

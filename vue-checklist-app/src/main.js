@@ -3,10 +3,11 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
-import '@mdi/font/css/materialdesignicons.css'
+// Removed @mdi/font - now using tree-shaken @mdi/js icons
 import './assets/styles/main.scss'
 import { errorHandler } from './services/errorHandler'
 import { performanceMonitor } from './services/performanceMonitor'
+import { logger } from './utils/logger'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -27,7 +28,7 @@ app.config.errorHandler = (err, instance, info) => {
 // Global warning handler (development only)
 if (import.meta.env.DEV) {
   app.config.warnHandler = (msg, instance, trace) => {
-    console.warn(`[Vue Warning]: ${msg}`, trace)
+    logger.warn(`[Vue Warning]: ${msg}`, trace)
   }
 }
 
@@ -39,10 +40,10 @@ app.use(vuetify)
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
   navigator.serviceWorker.register('/sw.js')
     .then(registration => {
-      console.log('Service Worker registered:', registration)
+      logger.info('Service Worker registered:', registration)
     })
     .catch(error => {
-      console.error('Service Worker registration failed:', error)
+      logger.error('Service Worker registration failed:', error)
     })
 }
 
