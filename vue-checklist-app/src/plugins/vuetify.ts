@@ -1,8 +1,8 @@
+import 'vuetify/styles'
 import { createVuetify, ThemeDefinition } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
-import 'vuetify/styles'
 import { icons } from '@/utils/icons'
 
 // Define custom theme colors based on our design system

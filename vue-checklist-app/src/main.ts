@@ -4,6 +4,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
+// Import Vuetify styles explicitly
+import 'vuetify/styles'
 // Removed @mdi/font - now using tree-shaken @mdi/js icons
 import './assets/styles/main.scss'
 import { errorHandler } from './services/errorHandler'
