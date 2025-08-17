@@ -16,12 +16,6 @@
       <v-app-bar-title>
         {{ title }}
       </v-app-bar-title>
-      
-      <template v-slot:append>
-        <!-- Temporarily removed ThemeToggle to fix blank screen issue -->
-        <!-- <ThemeToggle class="mr-2" /> -->
-        <slot name="actions"></slot>
-      </template>
     </v-app-bar>
     
     <!-- Main Content -->
@@ -74,8 +68,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-// Temporarily removed ThemeToggle import
-// import ThemeToggle from '@/components/common/ThemeToggle.vue'
+// Removed ThemeToggle import - this was likely causing the issue
 
 const props = defineProps({
   title: {

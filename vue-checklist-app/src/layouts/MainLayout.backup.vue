@@ -18,8 +18,7 @@
       </v-app-bar-title>
       
       <template v-slot:append>
-        <!-- Temporarily removed ThemeToggle to fix blank screen issue -->
-        <!-- <ThemeToggle class="mr-2" /> -->
+        <ThemeToggle class="mr-2" />
         <slot name="actions"></slot>
       </template>
     </v-app-bar>
@@ -74,8 +73,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-// Temporarily removed ThemeToggle import
-// import ThemeToggle from '@/components/common/ThemeToggle.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const props = defineProps({
   title: {
@@ -101,10 +99,14 @@ const routeToTab = {
 
 const activeTab = ref('home')
 
-// Update active tab based on route
-watch(() => route.path, (newPath) => {
-  activeTab.value = routeToTab[newPath] || 'home'
-}, { immediate: true })
+// Update active tab based on current route
+watch(
+  () => route.path,
+  (path) => {
+    activeTab.value = routeToTab[path] || 'home'
+  },
+  { immediate: true }
+)
 
 const navigateTo = (path) => {
   router.push(path)
@@ -124,6 +126,14 @@ const goBack = () => {
 
 .v-container {
   flex: 1;
-  padding-bottom: 56px; /* Account for bottom navigation */
+  padding-bottom: 56px !important; /* Space for bottom nav */
+}
+
+.v-bottom-navigation {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 </style>
