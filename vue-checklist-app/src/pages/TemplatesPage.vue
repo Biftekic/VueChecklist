@@ -88,13 +88,13 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTemplatesStore } from '@/stores/templates'
-import { useChecklistsStore } from '@/stores/checklists'
+import { useTemplatesStore } from '@/stores/templatesStore'
+import { useChecklistStore } from '@/stores/checklistStore'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 const templatesStore = useTemplatesStore()
-const checklistsStore = useChecklistsStore()
+const checklistsStore = useChecklistStore()
 
 const searchQuery = ref('')
 

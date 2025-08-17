@@ -151,7 +151,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistStore } from '@/stores/checklistStore'
 import { getIndustries } from '@/data/templates'
 
 const emit = defineEmits(['next'])

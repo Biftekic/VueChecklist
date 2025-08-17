@@ -398,7 +398,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistStore } from '@/stores/checklistStore'
 
 const props = defineProps({
   checklistId: {

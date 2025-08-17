@@ -1,11 +1,28 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { Ref, ComputedRef } from 'vue'
 import { dbOperations } from '@/services/db'
+
+export interface Template {
+  id: string
+  name: string
+  industry: string
+  rooms?: any[]
+  tasks?: any[]
+  createdAt?: Date
+  updatedAt?: Date
+  isCustom?: boolean
+  description?: string
+}
+
+export interface TemplatesByIndustry {
+  [key: string]: Template[]
+}
 
 export const useTemplatesStore = defineStore('templates', () => {
   // State
-  const templates = ref(new Map())
-  const industries = ref([
+  const templates: Ref<Map<string, Template>> = ref(new Map())
+  const industries: Ref<string[]> = ref([
     'office',
     'residential',
     'medical',
@@ -17,14 +34,14 @@ export const useTemplatesStore = defineStore('templates', () => {
     'postconstruction',
     'lawncare'
   ])
-  const activeTemplate = ref(null)
-  const isLoading = ref(false)
+  const activeTemplate: Ref<Template | null> = ref(null)
+  const isLoading: Ref<boolean> = ref(false)
   
   // Computed
-  const templatesList = computed(() => Array.from(templates.value.values()))
+  const templatesList: ComputedRef<Template[]> = computed(() => Array.from(templates.value.values()))
   
-  const templatesByIndustry = computed(() => {
-    const grouped = {}
+  const templatesByIndustry: ComputedRef<TemplatesByIndustry> = computed(() => {
+    const grouped: TemplatesByIndustry = {}
     templatesList.value.forEach(template => {
       if (!grouped[template.industry]) {
         grouped[template.industry] = []
@@ -35,11 +52,11 @@ export const useTemplatesStore = defineStore('templates', () => {
   })
   
   // Actions
-  async function loadTemplates() {
+  async function loadTemplates(): Promise<void> {
     isLoading.value = true
     try {
       const dbTemplates = await dbOperations.getAllTemplates()
-      dbTemplates.forEach(template => {
+      dbTemplates.forEach((template: Template) => {
         templates.value.set(template.id, template)
       })
     } catch (error) {
@@ -49,7 +66,7 @@ export const useTemplatesStore = defineStore('templates', () => {
     }
   }
   
-  async function selectTemplate(id) {
+  async function selectTemplate(id: string): Promise<Template | null> {
     const template = templates.value.get(id)
     if (template) {
       activeTemplate.value = template
@@ -71,7 +88,7 @@ export const useTemplatesStore = defineStore('templates', () => {
     return null
   }
   
-  async function updateTemplate(id, data) {
+  async function updateTemplate(id: string, data: Partial<Template>): Promise<boolean> {
     try {
       await dbOperations.updateTemplate(id, data)
       const existing = templates.value.get(id)
@@ -85,11 +102,11 @@ export const useTemplatesStore = defineStore('templates', () => {
     }
   }
   
-  async function createCustomTemplate(data) {
+  async function createCustomTemplate(data: Omit<Template, 'id'>): Promise<string | null> {
     try {
       const id = await dbOperations.saveTemplate(data)
-      data.id = id
-      templates.value.set(id, data)
+      const newTemplate: Template = { ...data, id }
+      templates.value.set(id, newTemplate)
       return id
     } catch (error) {
       console.error('Error creating template:', error)
@@ -97,12 +114,12 @@ export const useTemplatesStore = defineStore('templates', () => {
     }
   }
   
-  function clearActiveTemplate() {
+  function clearActiveTemplate(): void {
     activeTemplate.value = null
   }
   
-  function getIndustryColor(industry) {
-    const colors = {
+  function getIndustryColor(industry: string): string {
+    const colors: Record<string, string> = {
       office: '#2196F3',
       residential: '#4CAF50',
       medical: '#F44336',
@@ -117,8 +134,8 @@ export const useTemplatesStore = defineStore('templates', () => {
     return colors[industry] || '#757575'
   }
   
-  function getIndustryIcon(industry) {
-    const icons = {
+  function getIndustryIcon(industry: string): string {
+    const icons: Record<string, string> = {
       office: 'mdi-office-building',
       residential: 'mdi-home',
       medical: 'mdi-hospital',

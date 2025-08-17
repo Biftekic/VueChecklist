@@ -9,7 +9,7 @@ export const SupplyCategories = {
   SAFETY: 'Safety Equipment',
   PAPER: 'Paper Products',
   OTHER: 'Other'
-}
+} as const
 
 // Unit types
 export const UnitTypes = {
@@ -24,7 +24,7 @@ export const UnitTypes = {
   BOX: 'box',
   ROLL: 'roll',
   CASE: 'case'
-}
+} as const
 
 // Equipment status
 export const EquipmentStatus = {
@@ -33,6 +33,130 @@ export const EquipmentStatus = {
   NEEDS_REPAIR: 'needs_repair',
   IN_REPAIR: 'in_repair',
   RETIRED: 'retired'
+} as const
+
+export type SupplyCategory = typeof SupplyCategories[keyof typeof SupplyCategories]
+export type UnitType = typeof UnitTypes[keyof typeof UnitTypes]
+export type EquipmentStatusType = typeof EquipmentStatus[keyof typeof EquipmentStatus]
+
+export interface Supply {
+  id?: number
+  name: string
+  category: string
+  unit: string
+  costPerUnit: number
+  usagePerTask?: number
+  reorderPoint: number
+  reorderQuantity: number
+  hazardous?: boolean
+  msds?: string
+  currentStock: number
+  lastRestocked: string
+  type: 'supply'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Equipment {
+  id?: number
+  name: string
+  category: string
+  unit: string
+  costPerUnit: number
+  maintenanceInterval: number
+  lifespan: number
+  purchaseDate: string
+  status: EquipmentStatusType
+  lastMaintenance: string
+  type: 'equipment'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface UsageRecord {
+  supplyId: number
+  checklistId: string
+  quantity: number
+  date: string
+  cost: number
+}
+
+export interface ReorderAlert {
+  id?: number
+  supplyId: number
+  supplyName: string
+  currentStock: number
+  reorderPoint: number
+  reorderQuantity: number
+  estimatedCost: number
+  status: 'pending' | 'completed'
+  createdAt: string
+  completedAt?: string
+  actualCost?: number
+  actualQuantity?: number
+}
+
+export interface MaintenanceAlert {
+  id?: number
+  equipmentId: number
+  equipmentName: string
+  type: string
+  priority: 'high' | 'normal'
+  description: string
+  status: 'pending' | 'completed'
+  createdAt: string
+  completedAt?: string
+  notes?: string
+  cost?: number
+}
+
+export interface CostBreakdown {
+  totalCost: number
+  itemCount: number
+  breakdown: UsageRecord[]
+}
+
+export interface MonthlyCosts {
+  supplies: number
+  reorders: number
+  maintenance: number
+  total: number
+}
+
+export interface DailyUsage {
+  [day: string]: {
+    quantity: number
+    cost: number
+  }
+}
+
+export interface TopSupply {
+  supplyId: number
+  name: string
+  totalQuantity: number
+  totalCost: number
+  usageCount: number
+}
+
+export interface InventoryValue {
+  supplies: number
+  equipment: number
+  total: number
+}
+
+export interface SupplyPrediction {
+  supplyId: number
+  name: string
+  currentStock: number
+  dailyAverage: number
+  predictedUsage: number
+  daysUntilEmpty: number
+  needsReorder: boolean
+}
+
+export interface UsageItem {
+  supplyId: number
+  quantity?: number
 }
 
 // Common cleaning chemicals with default properties
@@ -204,7 +328,7 @@ export const CommonSupplies = {
 // Inventory Management Class
 class InventoryService {
   // Initialize inventory with common supplies
-  async initializeInventory() {
+  async initializeInventory(): Promise<void> {
     const existingSupplies = await db.inventory.count()
     if (existingSupplies > 0) return
     
@@ -232,35 +356,37 @@ class InventoryService {
   }
   
   // Supply Management
-  async addSupply(supply) {
+  async addSupply(supply: Omit<Supply, 'id' | 'type' | 'createdAt' | 'updatedAt'>): Promise<Supply> {
     const now = new Date().toISOString()
-    return await db.inventory.add({
+    const newSupply: Omit<Supply, 'id'> = {
       ...supply,
       type: 'supply',
       createdAt: now,
       updatedAt: now
-    })
+    }
+    const id = await db.inventory.add(newSupply)
+    return { ...newSupply, id }
   }
   
-  async updateSupply(id, updates) {
-    return await db.inventory.update(id, {
+  async updateSupply(id: number, updates: Partial<Supply>): Promise<void> {
+    await db.inventory.update(id, {
       ...updates,
       updatedAt: new Date().toISOString()
     })
   }
   
-  async getSupply(id) {
+  async getSupply(id: number): Promise<Supply | undefined> {
     return await db.inventory.get(id)
   }
   
-  async getAllSupplies() {
+  async getAllSupplies(): Promise<Supply[]> {
     return await db.inventory
       .where('type')
       .equals('supply')
       .toArray()
   }
   
-  async getSuppliesByCategory(category) {
+  async getSuppliesByCategory(category: string): Promise<Supply[]> {
     return await db.inventory
       .where('category')
       .equals(category)
@@ -269,33 +395,34 @@ class InventoryService {
   }
   
   // Equipment Management
-  async addEquipment(equipment) {
+  async addEquipment(equipment: Omit<Equipment, 'id' | 'type' | 'createdAt' | 'updatedAt'>): Promise<Equipment> {
     const now = new Date().toISOString()
-    return await db.equipment.add({
+    const newEquipment: Omit<Equipment, 'id'> = {
       ...equipment,
       type: 'equipment',
       createdAt: now,
       updatedAt: now
-    })
+    }
+    const id = await db.equipment.add(newEquipment)
+    return { ...newEquipment, id }
   }
   
-  async updateEquipment(id, updates) {
-    return await db.equipment.update(id, {
+  async updateEquipment(id: number, updates: Partial<Equipment>): Promise<void> {
+    await db.equipment.update(id, {
       ...updates,
       updatedAt: new Date().toISOString()
     })
   }
   
-  async getEquipment(id) {
+  async getEquipment(id: number): Promise<Equipment | undefined> {
     return await db.equipment.get(id)
   }
   
-  async getAllEquipment() {
-    return await db.equipment
-      .toArray()
+  async getAllEquipment(): Promise<Equipment[]> {
+    return await db.equipment.toArray()
   }
   
-  async getEquipmentByStatus(status) {
+  async getEquipmentByStatus(status: EquipmentStatusType): Promise<Equipment[]> {
     return await db.equipment
       .where('status')
       .equals(status)
@@ -303,14 +430,14 @@ class InventoryService {
   }
   
   // Usage Tracking
-  async recordUsage(checklistId, items) {
-    const usageRecords = []
+  async recordUsage(checklistId: string, items: UsageItem[]): Promise<UsageRecord[]> {
+    const usageRecords: UsageRecord[] = []
     
     for (const item of items) {
       const supply = await this.getSupply(item.supplyId)
       if (!supply) continue
       
-      const usage = {
+      const usage: UsageRecord = {
         supplyId: item.supplyId,
         checklistId,
         quantity: item.quantity || supply.usagePerTask || 0,
@@ -339,17 +466,17 @@ class InventoryService {
   }
   
   // Reorder Management
-  async createReorderAlert(supply) {
+  async createReorderAlert(supply: Supply): Promise<ReorderAlert | undefined> {
     const existingAlert = await db.reorderAlerts
       .where('supplyId')
-      .equals(supply.id)
+      .equals(supply.id!)
       .and(alert => alert.status === 'pending')
       .first()
     
     if (existingAlert) return
     
-    return await db.reorderAlerts.add({
-      supplyId: supply.id,
+    const alert: Omit<ReorderAlert, 'id'> = {
+      supplyId: supply.id!,
       supplyName: supply.name,
       currentStock: supply.currentStock,
       reorderPoint: supply.reorderPoint,
@@ -357,26 +484,31 @@ class InventoryService {
       estimatedCost: supply.reorderQuantity * supply.costPerUnit,
       status: 'pending',
       createdAt: new Date().toISOString()
-    })
+    }
+    
+    const id = await db.reorderAlerts.add(alert)
+    return { ...alert, id }
   }
   
-  async getReorderAlerts() {
+  async getReorderAlerts(): Promise<ReorderAlert[]> {
     return await db.reorderAlerts
       .where('status')
       .equals('pending')
       .toArray()
   }
   
-  async completeReorder(alertId, actualCost, quantity) {
+  async completeReorder(alertId: number, actualCost: number, quantity: number): Promise<boolean> {
     const alert = await db.reorderAlerts.get(alertId)
-    if (!alert) return
+    if (!alert) return false
     
     // Update supply stock
     const supply = await this.getSupply(alert.supplyId)
-    await this.updateSupply(alert.supplyId, {
-      currentStock: supply.currentStock + quantity,
-      lastRestocked: new Date().toISOString()
-    })
+    if (supply) {
+      await this.updateSupply(alert.supplyId, {
+        currentStock: supply.currentStock + quantity,
+        lastRestocked: new Date().toISOString()
+      })
+    }
     
     // Mark alert as completed
     await db.reorderAlerts.update(alertId, {
@@ -390,15 +522,15 @@ class InventoryService {
   }
   
   // Equipment Maintenance
-  async scheduleMaintenanceCheck() {
+  async scheduleMaintenanceCheck(): Promise<MaintenanceAlert[]> {
     const equipment = await this.getAllEquipment()
-    const maintenanceAlerts = []
+    const maintenanceAlerts: MaintenanceAlert[] = []
     
     for (const item of equipment) {
       if (item.status === EquipmentStatus.RETIRED) continue
       
       const lastMaintenance = new Date(item.lastMaintenance || item.purchaseDate)
-      const daysSince = Math.floor((new Date() - lastMaintenance) / (1000 * 60 * 60 * 24))
+      const daysSince = Math.floor((new Date().getTime() - lastMaintenance.getTime()) / (1000 * 60 * 60 * 24))
       
       if (daysSince >= item.maintenanceInterval) {
         const alert = await this.createMaintenanceAlert(item)
@@ -409,36 +541,39 @@ class InventoryService {
     return maintenanceAlerts
   }
   
-  async createMaintenanceAlert(equipment) {
+  async createMaintenanceAlert(equipment: Equipment): Promise<MaintenanceAlert | undefined> {
     const existingAlert = await db.maintenanceAlerts
       .where('equipmentId')
-      .equals(equipment.id)
+      .equals(equipment.id!)
       .and(alert => alert.status === 'pending')
       .first()
     
     if (existingAlert) return
     
-    return await db.maintenanceAlerts.add({
-      equipmentId: equipment.id,
+    const alert: Omit<MaintenanceAlert, 'id'> = {
+      equipmentId: equipment.id!,
       equipmentName: equipment.name,
       type: 'scheduled',
       priority: equipment.status === EquipmentStatus.NEEDS_REPAIR ? 'high' : 'normal',
       description: `Scheduled maintenance for ${equipment.name}`,
       status: 'pending',
       createdAt: new Date().toISOString()
-    })
+    }
+    
+    const id = await db.maintenanceAlerts.add(alert)
+    return { ...alert, id }
   }
   
-  async getMaintenanceAlerts() {
+  async getMaintenanceAlerts(): Promise<MaintenanceAlert[]> {
     return await db.maintenanceAlerts
       .where('status')
       .equals('pending')
       .toArray()
   }
   
-  async completeMaintenance(alertId, notes, cost) {
+  async completeMaintenance(alertId: number, notes: string, cost: number): Promise<boolean> {
     const alert = await db.maintenanceAlerts.get(alertId)
-    if (!alert) return
+    if (!alert) return false
     
     // Update equipment
     await this.updateEquipment(alert.equipmentId, {
@@ -468,7 +603,7 @@ class InventoryService {
   }
   
   // Cost Calculations
-  async calculateChecklistCost(checklistId) {
+  async calculateChecklistCost(checklistId: string): Promise<CostBreakdown> {
     const usage = await db.usageHistory
       .where('checklistId')
       .equals(checklistId)
@@ -483,7 +618,7 @@ class InventoryService {
     }
   }
   
-  async calculateMonthlyCosts(year, month) {
+  async calculateMonthlyCosts(year: number, month: number): Promise<MonthlyCosts> {
     const startDate = new Date(year, month - 1, 1)
     const endDate = new Date(year, month, 0)
     
@@ -503,16 +638,20 @@ class InventoryService {
       .between(startDate.toISOString(), endDate.toISOString())
       .toArray()
     
+    const supplies = usage.reduce((sum, r) => sum + r.cost, 0)
+    const reorderCosts = reorders.reduce((sum, r) => sum + (r.actualCost || 0), 0)
+    const maintenanceCosts = maintenance.reduce((sum, r) => sum + (r.cost || 0), 0)
+    
     return {
-      supplies: usage.reduce((sum, r) => sum + r.cost, 0),
-      reorders: reorders.reduce((sum, r) => sum + (r.actualCost || 0), 0),
-      maintenance: maintenance.reduce((sum, r) => sum + (r.cost || 0), 0),
-      total: 0 // Will be calculated
+      supplies,
+      reorders: reorderCosts,
+      maintenance: maintenanceCosts,
+      total: supplies + reorderCosts + maintenanceCosts
     }
   }
   
   // Analytics
-  async getSupplyUsageTrends(supplyId, days = 30) {
+  async getSupplyUsageTrends(supplyId: number, days: number = 30): Promise<DailyUsage> {
     const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - days)
@@ -527,7 +666,7 @@ class InventoryService {
       .toArray()
     
     // Group by day
-    const dailyUsage = {}
+    const dailyUsage: DailyUsage = {}
     usage.forEach(record => {
       const day = record.date.split('T')[0]
       if (!dailyUsage[day]) {
@@ -540,10 +679,10 @@ class InventoryService {
     return dailyUsage
   }
   
-  async getTopUsedSupplies(limit = 10) {
+  async getTopUsedSupplies(limit: number = 10): Promise<TopSupply[]> {
     const usage = await db.usageHistory.toArray()
     
-    const supplyUsage = {}
+    const supplyUsage: Record<number, TopSupply> = {}
     for (const record of usage) {
       if (!supplyUsage[record.supplyId]) {
         const supply = await this.getSupply(record.supplyId)
@@ -565,14 +704,14 @@ class InventoryService {
       .slice(0, limit)
   }
   
-  async getLowStockAlerts() {
+  async getLowStockAlerts(): Promise<Supply[]> {
     const supplies = await this.getAllSupplies()
     return supplies.filter(supply => 
       supply.currentStock <= supply.reorderPoint
     )
   }
   
-  async getInventoryValue() {
+  async getInventoryValue(): Promise<InventoryValue> {
     const supplies = await this.getAllSupplies()
     const equipment = await this.getAllEquipment()
     
@@ -583,7 +722,7 @@ class InventoryService {
     const equipmentValue = equipment.reduce((sum, item) => {
       if (item.status === EquipmentStatus.RETIRED) return sum
       // Depreciate equipment value based on age
-      const age = Math.floor((new Date() - new Date(item.purchaseDate)) / (1000 * 60 * 60 * 24))
+      const age = Math.floor((new Date().getTime() - new Date(item.purchaseDate).getTime()) / (1000 * 60 * 60 * 24))
       const depreciationRate = age / item.lifespan
       const currentValue = item.costPerUnit * (1 - Math.min(depreciationRate, 0.9))
       return sum + currentValue
@@ -597,12 +736,12 @@ class InventoryService {
   }
   
   // Supply prediction based on historical usage
-  async predictSupplyNeeds(days = 30) {
-    const predictions = []
+  async predictSupplyNeeds(days: number = 30): Promise<SupplyPrediction[]> {
+    const predictions: SupplyPrediction[] = []
     const supplies = await this.getAllSupplies()
     
     for (const supply of supplies) {
-      const usage = await this.getSupplyUsageTrends(supply.id, 30)
+      const usage = await this.getSupplyUsageTrends(supply.id!, 30)
       const dailyAverage = Object.values(usage).reduce((sum, day) => 
         sum + day.quantity, 0
       ) / 30
@@ -611,7 +750,7 @@ class InventoryService {
       const daysUntilEmpty = supply.currentStock / dailyAverage
       
       predictions.push({
-        supplyId: supply.id,
+        supplyId: supply.id!,
         name: supply.name,
         currentStock: supply.currentStock,
         dailyAverage,

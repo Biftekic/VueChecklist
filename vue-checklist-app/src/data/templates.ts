@@ -1,5 +1,31 @@
 // Cleaning templates organized by industry
-export const cleaningTemplates = {
+export interface TaskItem {
+  name: string
+  estimatedTime: number
+  chemicals: string[]
+  tools: string[]
+}
+
+export interface RoomTemplate {
+  name: string
+  tasks: TaskItem[]
+}
+
+export interface CleaningTemplate {
+  name: string
+  icon: string
+  color: string
+  rooms: RoomTemplate[]
+}
+
+export interface IndustryInfo {
+  value: string
+  name: string
+  icon: string
+  color: string
+}
+
+export const cleaningTemplates: Record<string, CleaningTemplate> = {
   office: {
     name: 'Office Cleaning',
     icon: 'mdi-office-building',
@@ -878,7 +904,7 @@ export const cleaningTemplates = {
 }
 
 // Helper function to get all industries
-export const getIndustries = () => {
+export const getIndustries = (): IndustryInfo[] => {
   return Object.keys(cleaningTemplates).map(key => ({
     value: key,
     name: cleaningTemplates[key].name,
@@ -888,13 +914,13 @@ export const getIndustries = () => {
 }
 
 // Helper function to get rooms for an industry
-export const getRoomsByIndustry = (industry) => {
+export const getRoomsByIndustry = (industry: string): RoomTemplate[] => {
   return cleaningTemplates[industry]?.rooms || []
 }
 
 // Helper function to get all unique chemicals
-export const getAllChemicals = () => {
-  const chemicals = new Set()
+export const getAllChemicals = (): string[] => {
+  const chemicals = new Set<string>()
   Object.values(cleaningTemplates).forEach(industry => {
     industry.rooms.forEach(room => {
       room.tasks.forEach(task => {
@@ -906,8 +932,8 @@ export const getAllChemicals = () => {
 }
 
 // Helper function to get all unique tools
-export const getAllTools = () => {
-  const tools = new Set()
+export const getAllTools = (): string[] => {
+  const tools = new Set<string>()
   Object.values(cleaningTemplates).forEach(industry => {
     industry.rooms.forEach(room => {
       room.tasks.forEach(task => {
@@ -919,7 +945,7 @@ export const getAllTools = () => {
 }
 
 // Helper function to calculate total time for a room
-export const calculateRoomTime = (tasks, multiplier = 1) => {
+export const calculateRoomTime = (tasks: TaskItem[], multiplier = 1): number => {
   return tasks.reduce((total, task) => {
     return total + (task.estimatedTime * multiplier)
   }, 0)

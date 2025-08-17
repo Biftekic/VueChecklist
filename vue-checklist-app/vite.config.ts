@@ -1,8 +1,9 @@
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vuetify from 'vite-plugin-vuetify'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath, URL } from 'node:url'
+import type { ManualChunksOption, OutputOptions } from 'rollup'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -91,7 +92,7 @@ export default defineConfig({
     cssCodeSplit: true, // Enable CSS code splitting for better performance
     rollupOptions: {
       output: {
-        manualChunks(id) {
+        manualChunks(id: string): string | undefined {
           if (id.includes('node_modules')) {
             // Core framework
             if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) {
@@ -131,12 +132,12 @@ export default defineConfig({
           }
         },
         // Better chunking strategy
-        chunkFileNames: (chunkInfo) => {
+        chunkFileNames: (chunkInfo): string => {
           const facadeModuleId = chunkInfo.facadeModuleId ? chunkInfo.facadeModuleId.split('/').pop() : 'chunk';
           return `js/[name]-${facadeModuleId}-[hash].js`;
         },
-        assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
+        assetFileNames: (assetInfo): string => {
+          const info = assetInfo.name!.split('.');
           const ext = info[info.length - 1];
           if (/png|jpe?g|svg|gif|tiff|bmp|ico/i.test(ext)) {
             return `images/[name]-[hash][extname]`;
@@ -146,7 +147,7 @@ export default defineConfig({
             return `assets/[name]-[hash][extname]`;
           }
         }
-      }
+      } as OutputOptions
     },
     // Enable minification for production
     minify: 'esbuild', // Using esbuild for faster builds
@@ -157,4 +158,4 @@ export default defineConfig({
     // Increase chunk size limit to reduce warnings
     chunkSizeWarningLimit: 1000
   }
-})
+} as UserConfig)

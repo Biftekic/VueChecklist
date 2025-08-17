@@ -183,12 +183,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChecklistsStore } from '@/stores/checklists'
+import { useChecklistStore } from '@/stores/checklistStore'
 import { useAppStore } from '@/stores/app'
 import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
-const checklistsStore = useChecklistsStore()
+const checklistsStore = useChecklistStore()
 const appStore = useAppStore()
 
 const searchQuery = ref('')

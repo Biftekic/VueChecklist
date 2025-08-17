@@ -227,7 +227,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useChecklistStore } from '@/stores/checklist'
+import { useChecklistStore } from '@/stores/checklistStore'
 import Fuse from 'fuse.js'
 
 const emit = defineEmits(['next', 'back'])
