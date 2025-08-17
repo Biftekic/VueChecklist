@@ -357,7 +357,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { routeOptimizer } from '@/services/routeOptimizer'
+import { routeOptimizerService } from '@/services/routeOptimizer'
 
 const props = defineProps({
   tasks: {
@@ -415,7 +415,7 @@ const calculateRoute = () => {
     prioritizeHighFrequency: true
   }
   
-  route.value = routeOptimizer.optimizeRoute(props.tasks, options)
+  route.value = routeOptimizerService.optimizeRoute(props.tasks, options)
 }
 
 const recalculateRoute = () => {
@@ -477,7 +477,7 @@ const applyRoute = () => {
 
 const exportRoute = () => {
   if (route.value) {
-    const exportData = routeOptimizer.exportRoute(route.value)
+    const exportData = routeOptimizerService.exportRoute(route.value)
     emit('export-route', exportData)
   }
 }
