@@ -20,7 +20,7 @@
                 mdi-clipboard-check
               </v-icon>
               <div class="text-h4 font-weight-bold text-primary">
-                {{ totalChecklists }}
+                0
               </div>
               <div class="text-caption text-medium-emphasis">
                 Total Checklists
@@ -33,7 +33,7 @@
                 mdi-calendar-check
               </v-icon>
               <div class="text-h4 font-weight-bold text-success">
-                {{ weeklyChecklists }}
+                0
               </div>
               <div class="text-caption text-medium-emphasis">
                 This Week
@@ -85,18 +85,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useChecklistStore } from '@/stores/checklistStore'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-console.log('HomePage.vue loaded - with store')
+console.log('HomePage.vue loaded - without store')
 
 const router = useRouter()
-const checklistsStore = useChecklistStore()
-
-const totalChecklists = ref(0)
-const weeklyChecklists = ref(0)
 
 // Computed greeting based on time of day
 const greeting = computed(() => {
@@ -104,32 +99,6 @@ const greeting = computed(() => {
   if (hour < 12) return 'Good morning! Ready to create today\'s checklists?'
   if (hour < 17) return 'Good afternoon! Keep up the great work!'
   return 'Good evening! Time to wrap up today\'s tasks?'
-})
-
-onMounted(async () => {
-  try {
-    console.log('Loading dashboard data...')
-    // Load all checklists
-    await checklistsStore.loadChecklists()
-    
-    // Get stats
-    const allChecklists = checklistsStore.checklistsList
-    totalChecklists.value = allChecklists.length
-    
-    // Calculate weekly checklists
-    const oneWeekAgo = new Date()
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
-    weeklyChecklists.value = allChecklists.filter(c => 
-      new Date(c.createdAt) > oneWeekAgo
-    ).length
-    
-    console.log('Dashboard data loaded:', { total: totalChecklists.value, weekly: weeklyChecklists.value })
-  } catch (error) {
-    console.error('Error loading dashboard data:', error)
-    // Set default values on error
-    totalChecklists.value = 0
-    weeklyChecklists.value = 0
-  }
 })
 
 const navigateTo = (path) => {
