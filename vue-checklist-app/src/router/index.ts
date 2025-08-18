@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/create',
     name: 'create',
-    component: () => import('@/pages/CreateChecklistPage.vue')
+    component: () => import('@/pages/CreateChecklistPage.simple.vue')
   },
   {
     path: '/checklists',
