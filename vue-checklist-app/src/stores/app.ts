@@ -34,11 +34,11 @@ export const useAppStore = defineStore('app', () => {
     isOnline.value = value
   }
   
-  function showNotification(options: string | Notification): void {
+  function showNotification(options: string | Notification, type?: 'info' | 'success' | 'warning' | 'error'): void {
     // Handle both string and object arguments
     let notificationData: Notification
     if (typeof options === 'string') {
-      notificationData = { message: options, type: 'info', duration: 3000 }
+      notificationData = { message: options, type: type || 'info', duration: 3000 }
     } else {
       notificationData = options
     }
