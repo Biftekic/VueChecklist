@@ -1,29 +1,284 @@
 <template>
-  <div class="checklists-page pa-4">
-    <v-container>
-      <h1 class="text-h3 mb-4">My Checklists</h1>
-      
-      <v-card class="pa-4">
-        <v-card-title>Your Checklists</v-card-title>
-        <v-card-text>
-          <p>You have no checklists yet.</p>
-          <v-btn color="primary" @click="goToCreate" class="mt-3">
-            Create Your First Checklist
-          </v-btn>
-        </v-card-text>
+  <MainLayout title="My Checklists">
+    <v-container class="pa-4">
+      <!-- Header with Action Button -->
+      <div class="d-flex justify-space-between align-center mb-4">
+        <h1 class="text-h4">Checklists</h1>
+        <v-btn
+          color="primary"
+          prepend-icon="mdi-plus"
+          @click="navigateTo('/create')"
+        >
+          New Checklist
+        </v-btn>
+      </div>
+
+      <!-- Filter Tabs -->
+      <v-tabs
+        v-model="filterTab"
+        class="mb-4"
+        color="primary"
+      >
+        <v-tab value="all">All</v-tab>
+        <v-tab value="active">Active</v-tab>
+        <v-tab value="completed">Completed</v-tab>
+      </v-tabs>
+
+      <!-- Loading State -->
+      <v-progress-linear
+        v-if="isLoading"
+        indeterminate
+        color="primary"
+        class="mb-4"
+      />
+
+      <!-- Empty State -->
+      <v-card
+        v-if="!isLoading && filteredChecklists.length === 0"
+        class="pa-8 text-center"
+        elevation="0"
+        color="grey-lighten-4"
+      >
+        <v-icon size="64" color="grey">
+          mdi-clipboard-text-outline
+        </v-icon>
+        <v-card-title class="text-grey">
+          {{ emptyStateMessage }}
+        </v-card-title>
+        <v-card-subtitle>
+          {{ emptyStateSubtitle }}
+        </v-card-subtitle>
+        <v-btn
+          v-if="filterTab === 'all'"
+          color="primary"
+          class="mt-4"
+          @click="navigateTo('/create')"
+        >
+          Create Your First Checklist
+        </v-btn>
       </v-card>
+
+      <!-- Checklists List -->
+      <v-row v-else>
+        <v-col
+          v-for="checklist in filteredChecklists"
+          :key="checklist.id"
+          cols="12"
+          sm="6"
+          md="4"
+        >
+          <v-card
+            class="checklist-card"
+            elevation="2"
+            @click="viewChecklist(checklist.id)"
+          >
+            <v-card-title>
+              <v-icon left class="mr-2">mdi-clipboard-check</v-icon>
+              {{ checklist.name || 'Unnamed Checklist' }}
+            </v-card-title>
+            
+            <v-card-subtitle>
+              <v-icon size="small" class="mr-1">mdi-account</v-icon>
+              {{ checklist.clientName || 'No client' }}
+            </v-card-subtitle>
+
+            <v-card-text>
+              <div class="d-flex justify-space-between align-center">
+                <div>
+                  <v-icon size="small" class="mr-1">mdi-calendar</v-icon>
+                  {{ formatDate(checklist.createdAt) }}
+                </div>
+                <v-chip
+                  size="small"
+                  :color="getStatusColor(checklist.status)"
+                >
+                  {{ checklist.status || 'active' }}
+                </v-chip>
+              </div>
+              
+              <div class="mt-2" v-if="checklist.tasks">
+                <v-progress-linear
+                  :value="getProgress(checklist)"
+                  color="success"
+                  height="8"
+                  rounded
+                />
+                <div class="text-caption mt-1 text-center">
+                  {{ getCompletedTasks(checklist) }} / {{ getTotalTasks(checklist) }} tasks
+                </div>
+              </div>
+            </v-card-text>
+
+            <v-card-actions>
+              <v-btn
+                text
+                color="primary"
+                @click.stop="viewChecklist(checklist.id)"
+              >
+                View
+              </v-btn>
+              <v-spacer />
+              <v-btn
+                icon
+                @click.stop="deleteChecklist(checklist.id)"
+              >
+                <v-icon color="error">mdi-delete</v-icon>
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-col>
+      </v-row>
     </v-container>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import MainLayout from '@/layouts/MainLayout.vue'
 
 const router = useRouter()
 
-const goToCreate = () => {
-  router.push('/create')
+// State
+const checklists = ref([])
+const isLoading = ref(false)
+const filterTab = ref('all')
+
+// Sample data for now
+const sampleChecklists = [
+  {
+    id: '1',
+    name: 'Weekly Cleaning',
+    clientName: 'John Doe',
+    createdAt: new Date().toISOString(),
+    status: 'active',
+    tasks: [
+      { id: '1', completed: true },
+      { id: '2', completed: true },
+      { id: '3', completed: false },
+      { id: '4', completed: false },
+    ]
+  },
+  {
+    id: '2',
+    name: 'Deep Clean',
+    clientName: 'Jane Smith',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    status: 'completed',
+    tasks: [
+      { id: '1', completed: true },
+      { id: '2', completed: true },
+      { id: '3', completed: true },
+    ]
+  }
+]
+
+// Computed
+const filteredChecklists = computed(() => {
+  if (filterTab.value === 'all') return checklists.value
+  if (filterTab.value === 'active') {
+    return checklists.value.filter(c => c.status !== 'completed')
+  }
+  if (filterTab.value === 'completed') {
+    return checklists.value.filter(c => c.status === 'completed')
+  }
+  return checklists.value
+})
+
+const emptyStateMessage = computed(() => {
+  if (filterTab.value === 'all') return 'No checklists yet'
+  if (filterTab.value === 'active') return 'No active checklists'
+  if (filterTab.value === 'completed') return 'No completed checklists'
+  return 'No checklists found'
+})
+
+const emptyStateSubtitle = computed(() => {
+  if (filterTab.value === 'all') return 'Create your first checklist to get started'
+  if (filterTab.value === 'active') return 'All your checklists are completed!'
+  if (filterTab.value === 'completed') return 'Complete some checklists to see them here'
+  return ''
+})
+
+// Methods
+const loadChecklists = async () => {
+  isLoading.value = true
+  try {
+    // For now, use sample data
+    await new Promise(resolve => setTimeout(resolve, 500))
+    checklists.value = sampleChecklists
+  } catch (error) {
+    console.error('Error loading checklists:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 
-console.log('ChecklistsPage loaded')
+const navigateTo = (path) => {
+  router.push(path)
+}
+
+const viewChecklist = (id) => {
+  router.push(`/checklist/${id}`)
+}
+
+const deleteChecklist = async (id) => {
+  if (confirm('Are you sure you want to delete this checklist?')) {
+    checklists.value = checklists.value.filter(c => c.id !== id)
+  }
+}
+
+const formatDate = (date) => {
+  if (!date) return 'Unknown'
+  const d = new Date(date)
+  const now = new Date()
+  const diffTime = Math.abs(now - d)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Yesterday'
+  if (diffDays < 7) return `${diffDays} days ago`
+  
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const getStatusColor = (status) => {
+  const colors = {
+    active: 'primary',
+    completed: 'success',
+    pending: 'warning',
+    cancelled: 'error'
+  }
+  return colors[status] || 'grey'
+}
+
+const getTotalTasks = (checklist) => {
+  return checklist.tasks ? checklist.tasks.length : 0
+}
+
+const getCompletedTasks = (checklist) => {
+  if (!checklist.tasks) return 0
+  return checklist.tasks.filter(t => t.completed).length
+}
+
+const getProgress = (checklist) => {
+  const total = getTotalTasks(checklist)
+  if (total === 0) return 0
+  return (getCompletedTasks(checklist) / total) * 100
+}
+
+// Lifecycle
+onMounted(() => {
+  loadChecklists()
+})
 </script>
+
+<style scoped>
+.checklist-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.checklist-card:hover {
+  transform: translateY(-2px);
+}
+</style>
