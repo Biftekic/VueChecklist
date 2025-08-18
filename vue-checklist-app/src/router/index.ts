@@ -6,7 +6,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: () => import('@/pages/HomePage.vue')
+    component: () => import('@/pages/HomePageSimple.vue')
   },
   {
     path: '/templates',
@@ -16,7 +16,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/create',
     name: 'create',
-    component: () => import('@/pages/CreateChecklistDebug2.vue')
+    component: () => import('@/pages/TestMinimal.vue')
   },
   {
     path: '/checklists',
