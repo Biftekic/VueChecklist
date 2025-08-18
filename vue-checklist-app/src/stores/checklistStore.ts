@@ -278,8 +278,9 @@ export const useChecklistStore = defineStore('checklist', () => {
     }
   }
   
-  // Initialize on store creation
-  loadChecklists()
+  // Don't auto-initialize - let components call loadChecklists when needed
+  // This prevents errors during app initialization
+  // loadChecklists()
   
   return {
     // State

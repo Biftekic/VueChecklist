@@ -20,7 +20,7 @@
                 mdi-clipboard-check
               </v-icon>
               <div class="text-h4 font-weight-bold text-primary">
-                0
+                {{ totalChecklists }}
               </div>
               <div class="text-caption text-medium-emphasis">
                 Total Checklists
@@ -33,7 +33,7 @@
                 mdi-calendar-check
               </v-icon>
               <div class="text-h4 font-weight-bold text-success">
-                0
+                {{ weeklyChecklists }}
               </div>
               <div class="text-caption text-medium-emphasis">
                 This Week
@@ -79,19 +79,73 @@
             </v-card>
           </v-col>
         </v-row>
+        <v-row class="mt-2">
+          <v-col cols="6">
+            <v-card
+              @click="navigateTo('/templates')"
+              class="pa-4 text-center"
+              elevation="2"
+              rounded="xl"
+            >
+              <v-icon size="48" color="warning">
+                mdi-file-document-outline
+              </v-icon>
+              <v-card-title class="text-body-1">
+                Templates
+              </v-card-title>
+            </v-card>
+          </v-col>
+          
+          <v-col cols="6">
+            <v-card
+              @click="navigateTo('/inventory')"
+              class="pa-4 text-center"
+              elevation="2"
+              rounded="xl"
+            >
+              <v-icon size="48" color="success">
+                mdi-package-variant
+              </v-icon>
+              <v-card-title class="text-body-1">
+                Inventory
+              </v-card-title>
+            </v-card>
+          </v-col>
+        </v-row>
+        <v-row class="mt-2">
+          <v-col cols="12">
+            <v-card
+              @click="navigateTo('/settings')"
+              class="pa-4 text-center"
+              elevation="2"
+              rounded="xl"
+            >
+              <v-icon size="48" color="info">
+                mdi-cog
+              </v-icon>
+              <v-card-title class="text-body-1">
+                Settings
+              </v-card-title>
+            </v-card>
+          </v-col>
+        </v-row>
       </div>
     </v-container>
   </MainLayout>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 
-console.log('HomePage.vue loaded - without store')
+console.log('HomePage.vue loaded - simple version without store')
 
 const router = useRouter()
+
+// Static values for now
+const totalChecklists = ref(0)
+const weeklyChecklists = ref(0)
 
 // Computed greeting based on time of day
 const greeting = computed(() => {
@@ -99,6 +153,13 @@ const greeting = computed(() => {
   if (hour < 12) return 'Good morning! Ready to create today\'s checklists?'
   if (hour < 17) return 'Good afternoon! Keep up the great work!'
   return 'Good evening! Time to wrap up today\'s tasks?'
+})
+
+// Try to load checklists in a safe way
+onMounted(() => {
+  console.log('HomePage mounted successfully')
+  // For now, just use static values
+  // We'll add store functionality later when we fix the issue
 })
 
 const navigateTo = (path) => {
