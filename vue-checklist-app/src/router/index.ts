@@ -6,22 +6,22 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: () => import('@/pages/HomePage.vue')
+    component: () => import('@/pages/HomePageSimple.vue')
   },
   {
     path: '/templates',
     name: 'templates',
-    component: () => import('@/pages/TemplatesPage.vue')
+    component: () => import('@/pages/TestMinimal.vue')
   },
   {
     path: '/create',
     name: 'create',
-    component: () => import('@/pages/CreateChecklistPage.test.vue')
+    component: () => import('@/pages/CreateChecklistPage.simple.vue')
   },
   {
     path: '/checklists',
     name: 'checklists',
-    component: () => import('@/pages/ChecklistsPage.vue')
+    component: () => import('@/pages/TestMinimal.vue')
   },
   {
     path: '/checklist/:id',
