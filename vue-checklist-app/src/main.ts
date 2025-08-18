@@ -8,31 +8,28 @@ import vuetify from './plugins/vuetify'
 import 'vuetify/styles'
 // Removed @mdi/font - now using tree-shaken @mdi/js icons
 import './assets/styles/main.scss'
-import { errorHandler } from './services/errorHandler'
-import { performanceMonitor } from './services/performanceMonitor'
-import { logger } from './utils/logger'
+// Temporarily disabled to diagnose blank screen issue
+// import { errorHandler } from './services/errorHandler'
+// import { performanceMonitor } from './services/performanceMonitor'
+// import { logger } from './utils/logger'
 
 const app: VueApp = createApp(App)
 const pinia = createPinia()
 
-// Initialize error handler with router
-errorHandler.setRouter(router)
+// Temporarily disabled error handler
+// errorHandler.setRouter(router)
 
-// Global error handler for Vue errors
+// Simple error handler for debugging
 app.config.errorHandler = (err: unknown, instance: ComponentPublicInstance | null, info: string) => {
   console.error('Vue Error:', err)
-  errorHandler.handleError(err as Error, {
-    context: {
-      component: instance?.$options.name || 'Unknown',
-      info
-    }
-  })
+  console.error('Component:', instance?.$options.name || 'Unknown')
+  console.error('Info:', info)
 }
 
-// Global warning handler (development only)
+// Simple warning handler (development only)
 if (import.meta.env.DEV) {
   app.config.warnHandler = (msg: string, instance: ComponentPublicInstance | null, trace: string) => {
-    logger.warn(`[Vue Warning]: ${msg}`, trace)
+    console.warn(`[Vue Warning]: ${msg}`, trace)
   }
 }
 
@@ -40,16 +37,16 @@ app.use(pinia)
 app.use(router)
 app.use(vuetify)
 
-// Register service worker for PWA
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  navigator.serviceWorker.register('/sw.js')
-    .then(registration => {
-      logger.info('Service Worker registered:', registration)
-    })
-    .catch(error => {
-      logger.error('Service Worker registration failed:', error)
-    })
-}
+// Temporarily disabled service worker
+// if ('serviceWorker' in navigator && import.meta.env.PROD) {
+//   navigator.serviceWorker.register('/sw.js')
+//     .then(registration => {
+//       console.log('Service Worker registered:', registration)
+//     })
+//     .catch(error => {
+//       console.error('Service Worker registration failed:', error)
+//     })
+// }
 
 app.mount('#app')
 
