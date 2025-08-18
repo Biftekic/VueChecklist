@@ -138,12 +138,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import { useChecklistStore } from '@/stores/checklistStore'
 
-console.log('HomePage.vue loaded - simple version without store')
+console.log('HomePage.vue loaded - with store integration')
 
 const router = useRouter()
+const checklistStore = useChecklistStore()
 
-// Static values for now
+// Initialize with static values, update from store if available
 const totalChecklists = ref(0)
 const weeklyChecklists = ref(0)
 
@@ -155,11 +157,20 @@ const greeting = computed(() => {
   return 'Good evening! Time to wrap up today\'s tasks?'
 })
 
-// Try to load checklists in a safe way
-onMounted(() => {
+// Safely load checklists
+onMounted(async () => {
   console.log('HomePage mounted successfully')
-  // For now, just use static values
-  // We'll add store functionality later when we fix the issue
+  try {
+    // Only load if the store has the method
+    if (checklistStore.loadChecklists) {
+      await checklistStore.loadChecklists()
+      totalChecklists.value = checklistStore.totalChecklists || 0
+      weeklyChecklists.value = checklistStore.activeChecklists?.length || 0
+    }
+  } catch (error) {
+    console.error('Error loading checklists:', error)
+    // Keep static values on error
+  }
 })
 
 const navigateTo = (path) => {

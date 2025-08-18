@@ -17,52 +17,27 @@
       <div class="pa-4">
         <!-- Step 1: Property Details -->
         <div v-if="currentStep === 1">
-          <Suspense>
-            <PropertyDetailsStep @next="nextStep" />
-            <template #fallback>
-              <v-progress-circular indeterminate color="primary" />
-            </template>
-          </Suspense>
+          <PropertyDetailsStep @next="nextStep" />
         </div>
         
         <!-- Step 2: Room Selection -->
         <div v-if="currentStep === 2">
-          <Suspense>
-            <RoomSelectionStep @next="nextStep" @back="previousStep" />
-            <template #fallback>
-              <v-progress-circular indeterminate color="primary" />
-            </template>
-          </Suspense>
+          <RoomSelectionStep @next="nextStep" @back="previousStep" />
         </div>
         
         <!-- Step 3: Task Selection -->
         <div v-if="currentStep === 3">
-          <Suspense>
-            <EnhancedTaskSelectionStep @next="nextStep" @back="previousStep" />
-            <template #fallback>
-              <v-progress-circular indeterminate color="primary" />
-            </template>
-          </Suspense>
+          <EnhancedTaskSelectionStep @next="nextStep" @back="previousStep" />
         </div>
         
         <!-- Step 4: Client Info -->
         <div v-if="currentStep === 4">
-          <Suspense>
-            <ClientInfoStep @next="nextStep" @back="previousStep" />
-            <template #fallback>
-              <v-progress-circular indeterminate color="primary" />
-            </template>
-          </Suspense>
+          <ClientInfoStep @next="nextStep" @back="previousStep" />
         </div>
         
         <!-- Step 5: Review & Save -->
         <div v-if="currentStep === 5">
-          <Suspense>
-            <ReviewStep @save="saveChecklist" @back="previousStep" />
-            <template #fallback>
-              <v-progress-circular indeterminate color="primary" />
-            </template>
-          </Suspense>
+          <ReviewStep @save="saveChecklist" @back="previousStep" />
         </div>
       </div>
     </v-container>
