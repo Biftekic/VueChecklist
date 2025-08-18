@@ -164,7 +164,7 @@ const valid = ref(false)
 // Get industries from templates
 const industries = getIndustries()
 
-// Property details
+// Property details - with safe access
 const selectedIndustry = ref(checklistStore.currentChecklist?.industry || '')
 const propertySize = ref(checklistStore.currentChecklist?.propertySize || '')
 const numberOfFloors = ref(checklistStore.currentChecklist?.numberOfFloors || 1)

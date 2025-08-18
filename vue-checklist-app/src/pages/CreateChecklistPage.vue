@@ -17,27 +17,52 @@
       <div class="pa-4">
         <!-- Step 1: Property Details -->
         <div v-if="currentStep === 1">
-          <PropertyDetailsStep @next="nextStep" />
+          <Suspense>
+            <PropertyDetailsStep @next="nextStep" />
+            <template #fallback>
+              <v-progress-circular indeterminate color="primary" />
+            </template>
+          </Suspense>
         </div>
         
         <!-- Step 2: Room Selection -->
         <div v-if="currentStep === 2">
-          <RoomSelectionStep @next="nextStep" @back="previousStep" />
+          <Suspense>
+            <RoomSelectionStep @next="nextStep" @back="previousStep" />
+            <template #fallback>
+              <v-progress-circular indeterminate color="primary" />
+            </template>
+          </Suspense>
         </div>
         
         <!-- Step 3: Task Selection -->
         <div v-if="currentStep === 3">
-          <EnhancedTaskSelectionStep @next="nextStep" @back="previousStep" />
+          <Suspense>
+            <EnhancedTaskSelectionStep @next="nextStep" @back="previousStep" />
+            <template #fallback>
+              <v-progress-circular indeterminate color="primary" />
+            </template>
+          </Suspense>
         </div>
         
         <!-- Step 4: Client Info -->
         <div v-if="currentStep === 4">
-          <ClientInfoStep @next="nextStep" @back="previousStep" />
+          <Suspense>
+            <ClientInfoStep @next="nextStep" @back="previousStep" />
+            <template #fallback>
+              <v-progress-circular indeterminate color="primary" />
+            </template>
+          </Suspense>
         </div>
         
         <!-- Step 5: Review & Save -->
         <div v-if="currentStep === 5">
-          <ReviewStep @save="saveChecklist" @back="previousStep" />
+          <Suspense>
+            <ReviewStep @save="saveChecklist" @back="previousStep" />
+            <template #fallback>
+              <v-progress-circular indeterminate color="primary" />
+            </template>
+          </Suspense>
         </div>
       </div>
     </v-container>
@@ -77,8 +102,24 @@ const pageTitle = computed(() => {
 })
 
 onMounted(() => {
-  // Reset steps when starting fresh
-  appStore.resetSteps()
+  try {
+    // Reset steps when starting fresh
+    if (appStore.resetSteps) {
+      appStore.resetSteps()
+    } else {
+      // Fallback if method doesn't exist
+      appStore.currentStep = 1
+    }
+    
+    // Initialize checklist store if needed
+    if (!checklistStore.currentChecklist) {
+      checklistStore.resetCurrentChecklist && checklistStore.resetCurrentChecklist()
+    }
+  } catch (error) {
+    console.error('Error initializing CreateChecklistPage:', error)
+    // Ensure we have a valid state even if initialization fails
+    appStore.currentStep = 1
+  }
 })
 
 const nextStep = () => {
