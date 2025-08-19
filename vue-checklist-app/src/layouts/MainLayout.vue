@@ -4,7 +4,8 @@
     <v-app-bar
       color="primary"
       density="comfortable"
-      elevation="0"
+      elevation="2"
+      class="app-header"
     >
       <v-app-bar-nav-icon
         v-if="showBackButton"
@@ -13,7 +14,8 @@
         <v-icon>mdi-arrow-left</v-icon>
       </v-app-bar-nav-icon>
       
-      <v-app-bar-title>
+      <v-app-bar-title class="font-weight-bold">
+        <v-icon class="mr-2">mdi-clipboard-check-outline</v-icon>
         {{ title }}
       </v-app-bar-title>
       
@@ -25,9 +27,11 @@
     </v-app-bar>
     
     <!-- Main Content -->
-    <v-container fluid class="pa-0">
-      <slot></slot>
-    </v-container>
+    <v-main class="main-content">
+      <v-container fluid class="pa-0 fill-height">
+        <slot></slot>
+      </v-container>
+    </v-main>
     
     <!-- Bottom Navigation -->
     <v-bottom-navigation
@@ -35,6 +39,8 @@
       color="primary"
       grow
       mandatory
+      elevation="8"
+      class="bottom-nav"
     >
       <v-btn
         value="home"
@@ -120,10 +126,28 @@ const goBack = () => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.app-header {
+  backdrop-filter: blur(10px);
+}
+
+.main-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px 20px 0 0;
+  margin-top: -20px;
+  padding-top: 20px;
+}
+
+.bottom-nav {
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .v-container {
   flex: 1;
-  padding-bottom: 56px; /* Account for bottom navigation */
+  padding-bottom: 76px; /* Account for bottom navigation with extra padding */
 }
 </style>
