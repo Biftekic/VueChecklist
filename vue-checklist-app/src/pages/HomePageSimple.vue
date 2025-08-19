@@ -126,7 +126,7 @@ const navigateTo = (path) => {
   router.push(path)
 }
 
-console.log('HomePageSimple loaded - no stores')
+// Home page with simplified architecture
 </script>
 
 <style scoped>

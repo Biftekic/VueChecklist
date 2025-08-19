@@ -189,28 +189,19 @@ const goBack = () => {
 }
 
 const createChecklist = () => {
-  // For now, just log the data and show a success message
-  console.log('Creating checklist with:', {
-    propertyName: propertyName.value,
-    address: address.value,
-    propertyType: propertyType.value,
-    cleaningType: cleaningType.value,
-    date: date.value,
-    time: time.value,
-    notes: notes.value
-  })
+  // TODO: Implement actual checklist creation with store
+  // Currently navigates to checklists page as placeholder
   
   // Navigate to checklists page after creation
   router.push('/checklists')
 }
 
-const selectTemplate = (template) => {
-  console.log('Selected template:', template)
-  // Pre-fill form based on template
+const selectTemplate = (template: string) => {
+  // Pre-fill form based on template selection
   cleaningType.value = template === 'Deep Clean' ? 'Deep Cleaning' : 'Standard Cleaning'
 }
 
-console.log('CreateChecklistPage.simple loaded successfully')
+// Simplified create checklist page
 </script>
 
 <style scoped>

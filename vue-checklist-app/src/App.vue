@@ -4,6 +4,6 @@
   </v-app>
 </template>
 
-<script setup>
-console.log('App.vue loaded - simplified version')
+<script setup lang="ts">
+// App component - main Vue application wrapper
 </script>

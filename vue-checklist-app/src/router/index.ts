@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-// Temporarily disabled for debugging
-// import { performanceMonitor } from '@/services/performanceMonitor'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -11,7 +9,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/templates',
     name: 'templates',
-    component: () => import('@/pages/TestMinimal.vue')
+    component: () => import('@/pages/TemplatesPage.vue')
   },
   {
     path: '/create',
@@ -21,7 +19,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/checklists',
     name: 'checklists',
-    component: () => import('@/pages/TestMinimal.vue')
+    component: () => import('@/pages/ChecklistsPage.vue')
   },
   {
     path: '/checklist/:id',
@@ -53,12 +51,5 @@ const router = createRouter({
   }
 })
 
-// Temporarily disabled route tracking
-// router.beforeEach((to, from, next) => {
-//   if (from.name) {
-//     performanceMonitor.trackRouteChange(from.path, to.path)
-//   }
-//   next()
-// })
 
 export default router
