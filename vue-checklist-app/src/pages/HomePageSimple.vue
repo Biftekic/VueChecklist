@@ -16,73 +16,29 @@
 
       <!-- Quick Actions -->
       <v-row>
-        <v-col cols="12" sm="6">
+        <v-col 
+          v-for="action in actionCards" 
+          :key="action.id"
+          cols="12" 
+          sm="6"
+        >
           <v-card 
             class="action-card elevation-3" 
-            @click="navigateTo('/create')"
+            @click="handleNavigation(action.path)"
             hover
+            :aria-label="action.title"
           >
             <v-card-text class="text-center pa-6">
-              <v-icon size="48" color="success" class="mb-3">
-                mdi-plus-circle
+              <v-icon 
+                size="48" 
+                :color="action.color" 
+                class="mb-3"
+              >
+                {{ action.icon }}
               </v-icon>
-              <h3 class="text-h6 font-weight-medium">Create New Checklist</h3>
+              <h3 class="text-h6 font-weight-medium">{{ action.title }}</h3>
               <p class="text-body-2 text-medium-emphasis mt-2">
-                Start a new cleaning project
-              </p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6">
-          <v-card 
-            class="action-card elevation-3" 
-            @click="navigateTo('/checklists')"
-            hover
-          >
-            <v-card-text class="text-center pa-6">
-              <v-icon size="48" color="info" class="mb-3">
-                mdi-format-list-checks
-              </v-icon>
-              <h3 class="text-h6 font-weight-medium">View Checklists</h3>
-              <p class="text-body-2 text-medium-emphasis mt-2">
-                Browse existing checklists
-              </p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6">
-          <v-card 
-            class="action-card elevation-3" 
-            @click="navigateTo('/templates')"
-            hover
-          >
-            <v-card-text class="text-center pa-6">
-              <v-icon size="48" color="warning" class="mb-3">
-                mdi-file-document-multiple
-              </v-icon>
-              <h3 class="text-h6 font-weight-medium">Templates</h3>
-              <p class="text-body-2 text-medium-emphasis mt-2">
-                Use pre-built templates
-              </p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-
-        <v-col cols="12" sm="6">
-          <v-card 
-            class="action-card elevation-3" 
-            @click="navigateTo('/inventory')"
-            hover
-          >
-            <v-card-text class="text-center pa-6">
-              <v-icon size="48" color="purple" class="mb-3">
-                mdi-package-variant
-              </v-icon>
-              <h3 class="text-h6 font-weight-medium">Inventory</h3>
-              <p class="text-body-2 text-medium-emphasis mt-2">
-                Manage supplies & equipment
+                {{ action.description }}
               </p>
             </v-card-text>
           </v-card>
@@ -97,16 +53,16 @@
         </v-card-title>
         <v-card-text>
           <v-row>
-            <v-col cols="6">
+            <v-col 
+              v-for="stat in quickStats" 
+              :key="stat.label"
+              cols="6"
+            >
               <div class="text-center">
-                <div class="text-h4 font-weight-bold text-primary">0</div>
-                <div class="text-caption">Active Checklists</div>
-              </div>
-            </v-col>
-            <v-col cols="6">
-              <div class="text-center">
-                <div class="text-h4 font-weight-bold text-success">0</div>
-                <div class="text-caption">Completed Today</div>
+                <div class="text-h4 font-weight-bold" :class="`text-${stat.color}`">
+                  {{ stat.value }}
+                </div>
+                <div class="text-caption">{{ stat.label }}</div>
               </div>
             </v-col>
           </v-row>
@@ -116,14 +72,71 @@
   </MainLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import type { ActionCard, QuickStat } from '@/types/navigation'
 
 const router = useRouter()
 
-const navigateTo = (path) => {
-  router.push(path)
+// Action cards configuration
+const actionCards = computed<ActionCard[]>(() => [
+  {
+    id: 'create',
+    title: 'Create New Checklist',
+    description: 'Start a new cleaning project',
+    icon: 'mdi-plus-circle',
+    color: 'success',
+    path: '/create'
+  },
+  {
+    id: 'view',
+    title: 'View Checklists',
+    description: 'Browse existing checklists',
+    icon: 'mdi-format-list-checks',
+    color: 'info',
+    path: '/checklists'
+  },
+  {
+    id: 'templates',
+    title: 'Templates',
+    description: 'Use pre-built templates',
+    icon: 'mdi-file-document-multiple',
+    color: 'warning',
+    path: '/templates'
+  },
+  {
+    id: 'inventory',
+    title: 'Inventory',
+    description: 'Manage supplies & equipment',
+    icon: 'mdi-package-variant',
+    color: 'purple',
+    path: '/inventory'
+  }
+])
+
+// Quick stats configuration
+const quickStats = computed<QuickStat[]>(() => [
+  {
+    label: 'Active Checklists',
+    value: 0,
+    color: 'primary'
+  },
+  {
+    label: 'Completed Today',
+    value: 0,
+    color: 'success'
+  }
+])
+
+// Navigation handler with error handling
+const handleNavigation = (path: string): void => {
+  try {
+    router.push(path)
+  } catch (error) {
+    console.error('Navigation error:', error)
+  }
 }
 
 // Home page with simplified architecture
