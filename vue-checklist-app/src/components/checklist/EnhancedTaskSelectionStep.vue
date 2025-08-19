@@ -219,6 +219,17 @@
                     Select Weekly
                   </v-btn>
                 </v-col>
+                <v-col cols="auto">
+                  <v-btn
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    prepend-icon="mdi-plus"
+                    @click="openCustomTaskCreator(room)"
+                  >
+                    Add Custom Task
+                  </v-btn>
+                </v-col>
               </v-row>
 
               <!-- Enhanced Tasks List -->
@@ -252,6 +263,15 @@
                         {{ getTaskTime(task) }} min
                       </v-chip>
 
+                      <!-- Edit Button -->
+                      <v-btn
+                        icon="mdi-pencil"
+                        size="x-small"
+                        variant="text"
+                        @click.stop="openTaskEditor(task, room)"
+                        class="mr-2"
+                      />
+                      
                       <!-- Safety Warning - High Priority -->
                       <v-chip
                         v-if="task.safety?.warnings?.length"
@@ -422,6 +442,14 @@
         </v-row>
       </v-card-text>
     </v-card>
+    
+    <!-- Task Edit Modal -->
+    <CustomTaskModal
+      v-model="taskEditDialog"
+      :task="editingTask"
+      :room="editingRoom"
+      @save="updateTask"
+    />
   </v-container>
 </template>
 
@@ -436,6 +464,7 @@ import {
   PRIORITY_CONFIG 
 } from '@/data/enhancedCleaningTasks'
 import { cleaningTasksDatabase } from '@/data/cleaningTasksDatabase'
+import CustomTaskModal from '@/components/checklist/CustomTaskModal.vue'
 import Fuse from 'fuse.js'
 
 const props = defineProps({
@@ -462,6 +491,11 @@ const customTaskTime = ref(15)
 const expandedTasks = ref({}) // Track expanded state of tasks
 const professionalMode = ref(false)
 const selectedFrequencies = ref([]) // For frequency filtering
+
+// Task editing state
+const taskEditDialog = ref(false)
+const editingTask = ref(null)
+const editingRoom = ref(null)
 
 // Get selected rooms from store or existing tasks in edit mode
 const selectedRooms = computed(() => {
@@ -672,6 +706,58 @@ const removeCustomTask = (roomName, index) => {
   if (customTasks.value[roomName]) {
     customTasks.value[roomName].splice(index, 1)
   }
+}
+
+// Task editing methods
+const openTaskEditor = (task, room) => {
+  editingTask.value = { ...task }
+  editingRoom.value = room
+  taskEditDialog.value = true
+}
+
+const openCustomTaskCreator = (room) => {
+  editingTask.value = {
+    name: '',
+    estimatedTime: 10,
+    chemicals: [],
+    tools: [],
+    isCustom: true
+  }
+  editingRoom.value = room
+  taskEditDialog.value = true
+}
+
+const updateTask = (updatedTask) => {
+  // Find and update the task in selectedTasks if it's already selected
+  if (selectedTasks.value[editingRoom.value.name]) {
+    const taskIndex = selectedTasks.value[editingRoom.value.name].findIndex(
+      t => t.id === updatedTask.id || t.name === editingTask.value.name
+    )
+    if (taskIndex !== -1) {
+      selectedTasks.value[editingRoom.value.name][taskIndex] = {
+        ...selectedTasks.value[editingRoom.value.name][taskIndex],
+        ...updatedTask
+      }
+    }
+  }
+  
+  // Also update in the room's task list for display
+  const roomIndex = selectedRooms.value.findIndex(r => r.name === editingRoom.value.name)
+  if (roomIndex !== -1) {
+    const taskIndex = selectedRooms.value[roomIndex].tasks.findIndex(
+      t => t.id === updatedTask.id || t.name === editingTask.value.name
+    )
+    if (taskIndex !== -1) {
+      selectedRooms.value[roomIndex].tasks[taskIndex] = {
+        ...selectedRooms.value[roomIndex].tasks[taskIndex],
+        ...updatedTask
+      }
+    }
+  }
+  
+  taskEditDialog.value = false
+  editingTask.value = null
+  editingRoom.value = null
 }
 
 // Get task time based on professional mode

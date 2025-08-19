@@ -136,8 +136,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import { useChecklistStore } from '@/stores/checklistStore'
 
 const router = useRouter()
+const checklistStore = useChecklistStore()
 
 // State
 const checklists = ref([])
@@ -203,11 +205,17 @@ const emptyStateSubtitle = computed(() => {
 const loadChecklists = async () => {
   isLoading.value = true
   try {
-    // For now, use sample data
-    await new Promise(resolve => setTimeout(resolve, 500))
-    checklists.value = sampleChecklists
+    // Load actual checklists from database via store
+    if (checklistStore.loadChecklists) {
+      await checklistStore.loadChecklists()
+      checklists.value = checklistStore.checklists || []
+    } else {
+      console.warn('checklistStore.loadChecklists not available, using sample data')
+      checklists.value = sampleChecklists
+    }
   } catch (error) {
     console.error('Error loading checklists:', error)
+    checklists.value = []
   } finally {
     isLoading.value = false
   }

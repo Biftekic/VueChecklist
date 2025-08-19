@@ -900,6 +900,77 @@ export const cleaningTemplates: Record<string, CleaningTemplate> = {
         ]
       }
     ]
+  },
+  
+  deepClean: {
+    name: 'Deep Cleaning',
+    icon: 'mdi-spray-bottle',
+    color: '#00BCD4',
+    rooms: [
+      {
+        name: 'Kitchen Deep Clean',
+        tasks: [
+          { name: 'Degrease all surfaces', estimatedTime: 20, chemicals: ['Heavy degreaser'], tools: ['Scrub brush', 'Cloth'] },
+          { name: 'Clean oven inside (deep clean)', estimatedTime: 30, chemicals: ['Oven cleaner'], tools: ['Scraper', 'Sponge'] },
+          { name: 'Clean refrigerator inside and out', estimatedTime: 25, chemicals: ['All-purpose cleaner'], tools: ['Cloth', 'Sponge'] },
+          { name: 'Clean and descale dishwasher', estimatedTime: 20, chemicals: ['Descaler'], tools: ['Cloth'] },
+          { name: 'Deep clean cabinets inside and out', estimatedTime: 30, chemicals: ['Wood cleaner'], tools: ['Cloth'] },
+          { name: 'Clean light fixtures and ceiling fans', estimatedTime: 15, chemicals: ['All-purpose cleaner'], tools: ['Duster', 'Ladder'] },
+          { name: 'Deep clean sink and disposal', estimatedTime: 10, chemicals: ['Sink cleaner', 'Disposal cleaner'], tools: ['Brush'] },
+          { name: 'Clean behind and under appliances', estimatedTime: 20, chemicals: ['Floor cleaner'], tools: ['Mop', 'Vacuum'] },
+          { name: 'Scrub tile grout', estimatedTime: 25, chemicals: ['Grout cleaner'], tools: ['Grout brush'] },
+          { name: 'Polish stainless steel appliances', estimatedTime: 15, chemicals: ['Stainless steel polish'], tools: ['Microfiber cloth'] }
+        ]
+      },
+      {
+        name: 'Bathrooms Deep Clean',
+        tasks: [
+          { name: 'Remove and prevent mold/mildew', estimatedTime: 20, chemicals: ['Mold remover'], tools: ['Scrub brush'] },
+          { name: 'Deep clean tile and grout', estimatedTime: 30, chemicals: ['Grout cleaner'], tools: ['Grout brush'] },
+          { name: 'Descale showerheads and faucets', estimatedTime: 15, chemicals: ['Descaler'], tools: ['Cloth'] },
+          { name: 'Deep clean toilet including base and behind', estimatedTime: 15, chemicals: ['Toilet cleaner', 'Disinfectant'], tools: ['Brush', 'Cloth'] },
+          { name: 'Clean and disinfect trash cans', estimatedTime: 10, chemicals: ['Disinfectant'], tools: ['Cloth'] },
+          { name: 'Wash shower curtain/clean glass doors', estimatedTime: 15, chemicals: ['Glass cleaner'], tools: ['Squeegee'] },
+          { name: 'Clean exhaust fan and vents', estimatedTime: 10, chemicals: ['All-purpose cleaner'], tools: ['Vacuum', 'Cloth'] },
+          { name: 'Polish fixtures and mirrors', estimatedTime: 10, chemicals: ['Glass cleaner', 'Metal polish'], tools: ['Cloth'] }
+        ]
+      },
+      {
+        name: 'Living Areas Deep Clean',
+        tasks: [
+          { name: 'Deep clean carpets or rugs', estimatedTime: 45, chemicals: ['Carpet cleaner'], tools: ['Carpet cleaner machine'] },
+          { name: 'Clean upholstery and cushions', estimatedTime: 30, chemicals: ['Upholstery cleaner'], tools: ['Vacuum', 'Brush'] },
+          { name: 'Dust and clean all light fixtures', estimatedTime: 20, chemicals: ['All-purpose cleaner'], tools: ['Duster', 'Ladder'] },
+          { name: 'Clean windows inside and out', estimatedTime: 30, chemicals: ['Glass cleaner'], tools: ['Squeegee', 'Cloth'] },
+          { name: 'Clean baseboards and crown molding', estimatedTime: 25, chemicals: ['All-purpose cleaner'], tools: ['Cloth', 'Duster'] },
+          { name: 'Deep clean and polish wood furniture', estimatedTime: 20, chemicals: ['Wood polish'], tools: ['Microfiber cloth'] },
+          { name: 'Clean air vents and returns', estimatedTime: 15, chemicals: ['All-purpose cleaner'], tools: ['Vacuum', 'Cloth'] },
+          { name: 'Wash walls and touch up paint', estimatedTime: 40, chemicals: ['Wall cleaner'], tools: ['Sponge', 'Cloth'] }
+        ]
+      },
+      {
+        name: 'Bedrooms Deep Clean',
+        tasks: [
+          { name: 'Flip and vacuum mattress', estimatedTime: 15, chemicals: [], tools: ['Vacuum'] },
+          { name: 'Clean under bed and furniture', estimatedTime: 20, chemicals: ['Floor cleaner'], tools: ['Vacuum', 'Mop'] },
+          { name: 'Organize and clean closets', estimatedTime: 30, chemicals: ['All-purpose cleaner'], tools: ['Cloth'] },
+          { name: 'Wash pillows and bedding', estimatedTime: 10, chemicals: ['Laundry detergent'], tools: [] },
+          { name: 'Clean light fixtures and ceiling fans', estimatedTime: 15, chemicals: ['All-purpose cleaner'], tools: ['Duster', 'Ladder'] },
+          { name: 'Deep clean carpets or floors', estimatedTime: 30, chemicals: ['Carpet/floor cleaner'], tools: ['Cleaner machine', 'Mop'] },
+          { name: 'Dust and clean all surfaces thoroughly', estimatedTime: 20, chemicals: ['Furniture polish'], tools: ['Microfiber cloth'] }
+        ]
+      },
+      {
+        name: 'Whole House',
+        tasks: [
+          { name: 'Clean all door handles and light switches', estimatedTime: 15, chemicals: ['Disinfectant'], tools: ['Cloth'] },
+          { name: 'Replace HVAC filters', estimatedTime: 10, chemicals: [], tools: [] },
+          { name: 'Deep clean all trash cans', estimatedTime: 15, chemicals: ['Disinfectant'], tools: ['Cloth'] },
+          { name: 'Organize and declutter all areas', estimatedTime: 45, chemicals: [], tools: [] },
+          { name: 'Deep clean garage or storage areas', estimatedTime: 60, chemicals: ['All-purpose cleaner'], tools: ['Broom', 'Mop'] }
+        ]
+      }
+    ]
   }
 }
 
