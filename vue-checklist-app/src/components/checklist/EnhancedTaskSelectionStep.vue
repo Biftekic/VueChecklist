@@ -728,29 +728,44 @@ const openCustomTaskCreator = (room) => {
 }
 
 const updateTask = (updatedTask) => {
-  // Find and update the task in selectedTasks if it's already selected
-  if (selectedTasks.value[editingRoom.value.name]) {
-    const taskIndex = selectedTasks.value[editingRoom.value.name].findIndex(
-      t => t.id === updatedTask.id || t.name === editingTask.value.name
-    )
-    if (taskIndex !== -1) {
-      selectedTasks.value[editingRoom.value.name][taskIndex] = {
-        ...selectedTasks.value[editingRoom.value.name][taskIndex],
-        ...updatedTask
+  // Check if this is a new custom task (has isCustom flag and no id or empty name in editingTask)
+  if (updatedTask.isCustom && (!editingTask.value.id && !editingTask.value.name)) {
+    // This is a new custom task, add it to customTasks
+    if (!customTasks.value[editingRoom.value.name]) {
+      customTasks.value[editingRoom.value.name] = []
+    }
+    
+    customTasks.value[editingRoom.value.name].push({
+      ...updatedTask,
+      id: `custom_${Date.now()}`,
+      room: editingRoom.value.name,
+      isCustom: true
+    })
+  } else {
+    // Find and update the task in selectedTasks if it's already selected
+    if (selectedTasks.value[editingRoom.value.name]) {
+      const taskIndex = selectedTasks.value[editingRoom.value.name].findIndex(
+        t => t.id === updatedTask.id || t.name === editingTask.value.name
+      )
+      if (taskIndex !== -1) {
+        selectedTasks.value[editingRoom.value.name][taskIndex] = {
+          ...selectedTasks.value[editingRoom.value.name][taskIndex],
+          ...updatedTask
+        }
       }
     }
-  }
-  
-  // Also update in the room's task list for display
-  const roomIndex = selectedRooms.value.findIndex(r => r.name === editingRoom.value.name)
-  if (roomIndex !== -1) {
-    const taskIndex = selectedRooms.value[roomIndex].tasks.findIndex(
-      t => t.id === updatedTask.id || t.name === editingTask.value.name
-    )
-    if (taskIndex !== -1) {
-      selectedRooms.value[roomIndex].tasks[taskIndex] = {
-        ...selectedRooms.value[roomIndex].tasks[taskIndex],
-        ...updatedTask
+    
+    // Also update in the room's task list for display
+    const roomIndex = selectedRooms.value.findIndex(r => r.name === editingRoom.value.name)
+    if (roomIndex !== -1 && selectedRooms.value[roomIndex].tasks) {
+      const taskIndex = selectedRooms.value[roomIndex].tasks.findIndex(
+        t => t.id === updatedTask.id || t.name === editingTask.value.name
+      )
+      if (taskIndex !== -1) {
+        selectedRooms.value[roomIndex].tasks[taskIndex] = {
+          ...selectedRooms.value[roomIndex].tasks[taskIndex],
+          ...updatedTask
+        }
       }
     }
   }

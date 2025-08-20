@@ -143,6 +143,15 @@ export const useChecklistStore = defineStore('checklist', () => {
     }))
   }
   
+  const updateSelectedTasks = (tasks: Task[]) => {
+    // Similar to setSelectedTasks but used for updating existing tasks
+    const multiplier = getTimeMultiplier()
+    currentChecklist.value.selectedTasks = tasks.map((task: Task) => ({
+      ...task,
+      adjustedTime: task.adjustedTime || Math.round(task.estimatedTime * multiplier)
+    }))
+  }
+  
   const updateClientInfo = (info: ClientInfo) => {
     currentChecklist.value.clientInfo = info
   }
@@ -298,6 +307,7 @@ export const useChecklistStore = defineStore('checklist', () => {
     setPropertyDetails,
     setSelectedRooms,
     setSelectedTasks,
+    updateSelectedTasks,
     updateClientInfo,
     updateChecklistName,
     saveChecklist,
