@@ -255,7 +255,7 @@ const handleNext = () => {
   ]
   
   // Update store
-  checklistStore.updateSelectedRooms(allRooms)
+  checklistStore.setSelectedRooms(allRooms)
   
   emit('next')
 }
