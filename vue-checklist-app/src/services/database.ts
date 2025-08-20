@@ -100,8 +100,8 @@ class VueChecklistDB extends Dexie {
   constructor() {
     super('VueChecklistDB')
     
-    // Define database schema
-    this.version(1).stores({
+    // Define database schema - must match the existing version in the browser
+    this.version(10).stores({
       checklists: '++id, name, clientName, clientId, industry, templateUsed, createdAt, updatedAt, status, frequency, qualityScore, lastInspection',
       templates: '++id, name, industry, isCustom, createdAt, updatedAt',
       tasks: '++id, checklistId, templateId, name, room, estimatedTime, chemicals, tools',

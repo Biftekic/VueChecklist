@@ -170,18 +170,19 @@ export const useChecklistStore = defineStore('checklist', () => {
   // Helper methods for tracking customizations
   const getModifiedTasks = () => {
     // Track tasks that have been modified from their original state
-    // This would need to compare with original template tasks
-    return currentChecklist.value.selectedTasks?.filter(task => task.isModified) || []
+    // For now, return empty array as we're not tracking modifications yet
+    return []
   }
   
   const getCustomTasks = () => {
     // Track tasks that were added as custom tasks
-    return currentChecklist.value.selectedTasks?.filter(task => task.isCustom) || []
+    // For now, return empty array as we're not tracking custom tasks yet
+    return []
   }
   
   const getRemovedTasks = () => {
     // Track tasks that were removed from the original template
-    // This would need to compare with original template tasks
+    // For now, return empty array as we're not tracking removed tasks yet
     return []
   }
   
@@ -217,49 +218,74 @@ export const useChecklistStore = defineStore('checklist', () => {
           `${currentChecklist.value.clientInfo.name} - ${new Date().toLocaleDateString()}` : 
           `Checklist - ${new Date().toLocaleDateString()}`)
       
+      // Create a clean checklist data object without Vue reactive properties
       const checklistData = {
-        ...currentChecklist.value,
         name: checklistName,
         clientName: currentChecklist.value.clientInfo?.name,
-        clientId: currentChecklist.value.clientInfo?.id || undefined,
+        clientId: undefined, // Don't use clientInfo.id as it doesn't exist yet
+        industry: currentChecklist.value.industry,
+        propertySize: currentChecklist.value.propertySize,
+        numberOfFloors: currentChecklist.value.numberOfFloors,
+        difficulty: currentChecklist.value.difficulty,
+        expectations: currentChecklist.value.expectations,
+        challenges: currentChecklist.value.challenges,
         frequency: currentChecklist.value.clientInfo?.frequency,
         templateUsed: currentChecklist.value.industry,
-        customizations
+        customizations,
+        // Don't include selectedRooms and selectedTasks here - they'll be saved separately
+        status: 'active'
       }
       
       console.log('Saving checklist data:', checklistData)
-      const id = await databaseService.saveChecklist(checklistData)
-      console.log('Checklist saved with ID:', id)
       
-      // Save tasks
-      if (currentChecklist.value.selectedTasks?.length > 0) {
-        await databaseService.saveTasks(currentChecklist.value.selectedTasks, id)
-        console.log('Tasks saved for checklist:', id)
-      }
+      // Debug: Log the exact structure being saved
+      console.log('Debug - Selected rooms:', currentChecklist.value.selectedRooms)
+      console.log('Debug - Selected tasks:', currentChecklist.value.selectedTasks)
+      console.log('Debug - Client info:', currentChecklist.value.clientInfo)
       
-      // Save client if new
-      if (currentChecklist.value.clientInfo?.name) {
-        const clientId = await databaseService.saveClient(currentChecklist.value.clientInfo)
-        console.log('Client saved with ID:', clientId)
+      try {
+        // Clean the data to ensure it's serializable
+        const cleanData = JSON.parse(JSON.stringify(checklistData))
+        console.log('Cleaned data for save:', cleanData)
         
-        // Save client preferences for future use
-        if (clientId && customizations) {
-          await databaseService.saveClientPreferences(clientId, {
-            customizations,
-            templateUsed: currentChecklist.value.industry,
-            industry: currentChecklist.value.industry,
-            frequency: currentChecklist.value.clientInfo?.frequency
-          })
+        const id = await databaseService.saveChecklist(cleanData)
+        console.log('Checklist saved with ID:', id)
+        
+        // Save tasks
+        if (currentChecklist.value.selectedTasks?.length > 0) {
+          // Clean tasks data to remove Vue reactive properties
+          const cleanTasks = JSON.parse(JSON.stringify(currentChecklist.value.selectedTasks))
+          await databaseService.saveTasks(cleanTasks, id)
+          console.log('Tasks saved for checklist:', id)
         }
+        
+        // Save client if new
+        if (currentChecklist.value.clientInfo?.name) {
+          const clientId = await databaseService.saveClient(currentChecklist.value.clientInfo)
+          console.log('Client saved with ID:', clientId)
+          
+          // Save client preferences for future use
+          if (clientId && customizations) {
+            await databaseService.saveClientPreferences(clientId, {
+              customizations,
+              templateUsed: currentChecklist.value.industry,
+              industry: currentChecklist.value.industry,
+              frequency: currentChecklist.value.clientInfo?.frequency
+            })
+          }
+        }
+        
+        // Reload checklists
+        await loadChecklists()
+        
+        // Clear current checklist
+        resetCurrentChecklist()
+        
+        return id
+      } catch (innerError) {
+        console.error('Detailed error during save:', innerError)
+        throw innerError
       }
-      
-      // Reload checklists
-      await loadChecklists()
-      
-      // Clear current checklist
-      resetCurrentChecklist()
-      
-      return id
     } catch (error) {
       console.error('Error saving checklist:', error)
       throw error
