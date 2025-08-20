@@ -579,6 +579,130 @@ class PDFService {
       return false
     }
   }
+
+  // Generate checklist PDF (simplified version for ReviewStep)
+  generateChecklistPDF(checklist: any): jsPDF {
+    this.initDocument({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    })
+
+    if (!this.doc) {
+      throw new Error('Failed to initialize PDF document')
+    }
+
+    // Add title
+    this.addHeader(
+      checklist.name || 'Cleaning Checklist',
+      `${checklist.industry || 'General'} - ${checklist.clientInfo?.name || 'Client'}`
+    )
+
+    // Add client information section
+    if (checklist.clientInfo) {
+      this.doc.setFontSize(14)
+      this.doc.setTextColor(this.colors.primary)
+      this.doc.text('Client Information', this.margins.left, this.currentY)
+      this.currentY += 8
+
+      this.doc.setFontSize(10)
+      this.doc.setTextColor(this.colors.text)
+      
+      const clientDetails = [
+        { label: 'Name:', value: checklist.clientInfo.name || 'N/A' },
+        { label: 'Address:', value: checklist.clientInfo.address || 'N/A' },
+        { label: 'Phone:', value: checklist.clientInfo.phone || 'N/A' },
+        { label: 'Email:', value: checklist.clientInfo.email || 'N/A' },
+        { label: 'Frequency:', value: checklist.clientInfo.frequency || 'N/A' }
+      ]
+
+      clientDetails.forEach(detail => {
+        if (detail.value !== 'N/A') {
+          this.doc!.text(detail.label, this.margins.left, this.currentY)
+          this.doc!.text(detail.value, this.margins.left + 25, this.currentY)
+          this.currentY += 5
+        }
+      })
+      this.currentY += 10
+    }
+
+    // Add property details
+    this.doc.setFontSize(14)
+    this.doc.setTextColor(this.colors.primary)
+    this.doc.text('Property Details', this.margins.left, this.currentY)
+    this.currentY += 8
+
+    this.doc.setFontSize(10)
+    this.doc.setTextColor(this.colors.text)
+    this.doc.text(`Industry: ${checklist.industry || 'N/A'}`, this.margins.left, this.currentY)
+    this.currentY += 5
+    this.doc.text(`Property Size: ${checklist.propertySize || 'N/A'} m²`, this.margins.left, this.currentY)
+    this.currentY += 5
+    this.doc.text(`Number of Floors: ${checklist.numberOfFloors || 'N/A'}`, this.margins.left, this.currentY)
+    this.currentY += 10
+
+    // Add tasks by room
+    if (checklist.selectedTasks && checklist.selectedTasks.length > 0) {
+      this.doc.setFontSize(14)
+      this.doc.setTextColor(this.colors.primary)
+      this.doc.text('Tasks by Room', this.margins.left, this.currentY)
+      this.currentY += 8
+
+      // Group tasks by room
+      const tasksByRoom: { [key: string]: any[] } = {}
+      checklist.selectedTasks.forEach((task: any) => {
+        const room = task.room || 'General'
+        if (!tasksByRoom[room]) {
+          tasksByRoom[room] = []
+        }
+        tasksByRoom[room].push(task)
+      })
+
+      // Add each room and its tasks
+      Object.entries(tasksByRoom).forEach(([roomName, tasks]) => {
+        this.checkPageBreak(20)
+        
+        this.doc!.setFontSize(12)
+        this.doc!.setTextColor(this.colors.primary)
+        this.doc!.text(roomName, this.margins.left, this.currentY)
+        this.currentY += 6
+
+        tasks.forEach((task: any) => {
+          this.checkPageBreak(8)
+          
+          // Checkbox
+          this.doc!.setDrawColor(this.colors.text)
+          this.doc!.rect(this.margins.left + 5, this.currentY - 3, 3, 3)
+
+          // Task name
+          this.doc!.setFontSize(10)
+          this.doc!.setTextColor(this.colors.text)
+          this.doc!.text(task.name, this.margins.left + 12, this.currentY)
+
+          // Time estimate
+          if (task.adjustedTime || task.estimatedTime) {
+            const time = task.adjustedTime || task.estimatedTime
+            this.doc!.setFontSize(8)
+            this.doc!.setTextColor('#888888')
+            this.doc!.text(`(${time} min)`, this.pageWidth - this.margins.right - 20, this.currentY)
+          }
+
+          this.currentY += 5
+        })
+        
+        this.currentY += 5
+      })
+    }
+
+    // Add footer to all pages
+    const totalPages = this.doc.getNumberOfPages()
+    for (let i = 1; i <= totalPages; i++) {
+      this.doc.setPage(i)
+      this.addFooter(i, totalPages)
+    }
+
+    return this.doc
+  }
 }
 
 // Export singleton instance

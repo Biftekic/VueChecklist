@@ -295,9 +295,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useChecklistStore } from '@/stores/checklistStore'
+import { useAppStore } from '@/stores/app'
 import { useRouter } from 'vue-router'
 
 const checklistStore = useChecklistStore()
+const appStore = useAppStore()
 const router = useRouter()
 
 const expandedPanels = ref(['client', 'property', 'tasks'])
@@ -456,11 +458,11 @@ const generatePDF = () => {
       const pdf = pdfService.generateChecklistPDF(checklist.value)
       const filename = `${checklistName.value || 'checklist'}_preview.pdf`
       pdf.save(filename)
-      checklistStore.showNotification('PDF generated successfully!', 'success')
+      appStore.showNotification('PDF generated successfully!', 'success')
     })
   } catch (error) {
     console.error('Error generating PDF:', error)
-    checklistStore.showNotification('Failed to generate PDF', 'error')
+    appStore.showNotification('Failed to generate PDF', 'error')
   }
 }
 
@@ -482,13 +484,13 @@ const saveChecklist = async () => {
     }
     
     // Show success message
-    checklistStore.showNotification('Checklist saved successfully!', 'success')
+    appStore.showNotification('Checklist saved successfully!', 'success')
     
     // Navigate to checklists page
     router.push('/checklists')
   } catch (error) {
     console.error('Error saving checklist:', error)
-    checklistStore.showNotification('Error saving checklist', 'error')
+    appStore.showNotification('Error saving checklist', 'error')
   } finally {
     saving.value = false
   }
