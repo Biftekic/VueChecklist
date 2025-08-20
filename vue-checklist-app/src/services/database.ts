@@ -6,13 +6,20 @@ interface ChecklistRecord {
   id?: string
   name?: string
   clientName?: string
+  clientId?: string
   industry?: string
+  templateUsed?: string
   createdAt?: string
   updatedAt?: string
   status?: string
   frequency?: string
   qualityScore?: number
   lastInspection?: string
+  customizations?: {
+    modifiedTasks?: any[]
+    addedTasks?: any[]
+    removedTasks?: any[]
+  }
   [key: string]: any
 }
 
@@ -95,7 +102,7 @@ class VueChecklistDB extends Dexie {
     
     // Define database schema
     this.version(1).stores({
-      checklists: '++id, name, clientName, industry, createdAt, updatedAt, status, frequency, qualityScore, lastInspection',
+      checklists: '++id, name, clientName, clientId, industry, templateUsed, createdAt, updatedAt, status, frequency, qualityScore, lastInspection',
       templates: '++id, name, industry, isCustom, createdAt, updatedAt',
       tasks: '++id, checklistId, templateId, name, room, estimatedTime, chemicals, tools',
       clients: '++id, name, email, phone, address, createdAt',
@@ -335,6 +342,41 @@ class DatabaseService {
     await db.syncQueue.where('status').equals('synced').delete()
   }
   
+  // Client-specific methods
+  async getClientChecklists(clientId: string): Promise<ChecklistRecord[]> {
+    return await db.checklists
+      .where('clientId')
+      .equals(clientId)
+      .reverse()
+      .sortBy('createdAt')
+  }
+  
+  async getClientPreferences(clientId: string): Promise<any> {
+    // Get the most recent checklist for the client to extract preferences
+    const recentChecklists = await this.getClientChecklists(clientId)
+    if (recentChecklists.length > 0) {
+      const lastChecklist = recentChecklists[0]
+      return {
+        customizations: lastChecklist.customizations,
+        templateUsed: lastChecklist.templateUsed,
+        industry: lastChecklist.industry,
+        frequency: lastChecklist.frequency
+      }
+    }
+    return null
+  }
+  
+  async saveClientPreferences(clientId: string, preferences: any): Promise<void> {
+    // Store preferences in settings with client-specific key
+    const key = `client_preferences_${clientId}`
+    await this.saveSetting(key, preferences)
+  }
+  
+  async getClientPreferencesBySetting(clientId: string): Promise<any> {
+    const key = `client_preferences_${clientId}`
+    return await this.getSetting(key)
+  }
+
   // Export/Import
   async exportData(): Promise<string> {
     const data: ExportData = {

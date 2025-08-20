@@ -160,12 +160,57 @@ export const useChecklistStore = defineStore('checklist', () => {
     currentChecklist.value.name = name
   }
   
+  // Helper methods for tracking customizations
+  const getModifiedTasks = () => {
+    // Track tasks that have been modified from their original state
+    // This would need to compare with original template tasks
+    return currentChecklist.value.selectedTasks?.filter(task => task.isModified) || []
+  }
+  
+  const getCustomTasks = () => {
+    // Track tasks that were added as custom tasks
+    return currentChecklist.value.selectedTasks?.filter(task => task.isCustom) || []
+  }
+  
+  const getRemovedTasks = () => {
+    // Track tasks that were removed from the original template
+    // This would need to compare with original template tasks
+    return []
+  }
+  
+  const loadClientPreferences = async (clientId: string) => {
+    try {
+      const preferences = await databaseService.getClientPreferences(clientId)
+      if (preferences) {
+        // Apply preferences to current checklist
+        if (preferences.customizations) {
+          // Apply customizations here
+          console.log('Client preferences loaded:', preferences)
+        }
+        return preferences
+      }
+    } catch (error) {
+      console.error('Error loading client preferences:', error)
+    }
+    return null
+  }
+  
   const saveChecklist = async (): Promise<string> => {
     try {
+      // Extract customizations by comparing with original template
+      const customizations = {
+        modifiedTasks: getModifiedTasks(),
+        addedTasks: getCustomTasks(),
+        removedTasks: getRemovedTasks()
+      }
+      
       const checklistData = {
         ...currentChecklist.value,
         clientName: currentChecklist.value.clientInfo?.name,
-        frequency: currentChecklist.value.clientInfo?.frequency
+        clientId: currentChecklist.value.clientInfo?.id || undefined,
+        frequency: currentChecklist.value.clientInfo?.frequency,
+        templateUsed: currentChecklist.value.industry,
+        customizations
       }
       
       const id = await databaseService.saveChecklist(checklistData)
@@ -177,7 +222,17 @@ export const useChecklistStore = defineStore('checklist', () => {
       
       // Save client if new
       if (currentChecklist.value.clientInfo?.name) {
-        await databaseService.saveClient(currentChecklist.value.clientInfo)
+        const clientId = await databaseService.saveClient(currentChecklist.value.clientInfo)
+        
+        // Save client preferences for future use
+        if (clientId && customizations) {
+          await databaseService.saveClientPreferences(clientId, {
+            customizations,
+            templateUsed: currentChecklist.value.industry,
+            industry: currentChecklist.value.industry,
+            frequency: currentChecklist.value.clientInfo?.frequency
+          })
+        }
       }
       
       // Reload checklists
@@ -310,6 +365,7 @@ export const useChecklistStore = defineStore('checklist', () => {
     updateSelectedTasks,
     updateClientInfo,
     updateChecklistName,
+    loadClientPreferences,
     saveChecklist,
     saveAsTemplate,
     loadChecklists,
