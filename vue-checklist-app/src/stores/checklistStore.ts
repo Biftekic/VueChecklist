@@ -204,8 +204,15 @@ export const useChecklistStore = defineStore('checklist', () => {
         removedTasks: getRemovedTasks()
       }
       
+      // Generate a default name if not set
+      const checklistName = currentChecklist.value.name || 
+        (currentChecklist.value.clientInfo?.name ? 
+          `${currentChecklist.value.clientInfo.name} - ${new Date().toLocaleDateString()}` : 
+          `Checklist - ${new Date().toLocaleDateString()}`)
+      
       const checklistData = {
         ...currentChecklist.value,
+        name: checklistName,
         clientName: currentChecklist.value.clientInfo?.name,
         clientId: currentChecklist.value.clientInfo?.id || undefined,
         frequency: currentChecklist.value.clientInfo?.frequency,
@@ -213,16 +220,20 @@ export const useChecklistStore = defineStore('checklist', () => {
         customizations
       }
       
+      console.log('Saving checklist data:', checklistData)
       const id = await databaseService.saveChecklist(checklistData)
+      console.log('Checklist saved with ID:', id)
       
       // Save tasks
       if (currentChecklist.value.selectedTasks?.length > 0) {
         await databaseService.saveTasks(currentChecklist.value.selectedTasks, id)
+        console.log('Tasks saved for checklist:', id)
       }
       
       // Save client if new
       if (currentChecklist.value.clientInfo?.name) {
         const clientId = await databaseService.saveClient(currentChecklist.value.clientInfo)
+        console.log('Client saved with ID:', clientId)
         
         // Save client preferences for future use
         if (clientId && customizations) {
@@ -275,7 +286,9 @@ export const useChecklistStore = defineStore('checklist', () => {
     isLoading.value = true
     try {
       const data = await databaseService.getAllChecklists()
+      console.log('Loaded from database:', data)
       checklists.value = data
+      console.log('Store checklists after load:', checklists.value)
     } catch (error) {
       console.error('Error loading checklists:', error)
       throw error
