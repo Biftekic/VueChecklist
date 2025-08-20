@@ -14,8 +14,8 @@
         <v-form ref="form" v-model="valid">
           <!-- Industry Selection -->
           <div class="mb-6">
-            <div class="text-subtitle-1 mb-3">Select Industry Type</div>
-            <v-row dense>
+            <div class="text-subtitle-1 mb-3">Select Industry Type ({{ industries.length }} available)</div>
+            <v-row dense class="industry-grid">
               <v-col
                 v-for="industry in industries"
                 :key="industry.value"
@@ -262,5 +262,29 @@ const handleNext = async () => {
 
 .v-chip {
   margin: 4px;
+}
+
+.industry-grid {
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.industry-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.industry-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.industry-grid::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.industry-grid::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>
