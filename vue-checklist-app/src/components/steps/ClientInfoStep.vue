@@ -177,6 +177,33 @@
               </v-row>
             </v-card-text>
           </v-card>
+
+          <!-- Navigation Buttons -->
+          <v-row class="mt-6">
+            <v-col cols="12" sm="6">
+              <v-btn
+                size="large"
+                variant="outlined"
+                block
+                @click="handleBack"
+              >
+                <v-icon start>mdi-arrow-left</v-icon>
+                Back
+              </v-btn>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <v-btn
+                color="primary"
+                size="large"
+                block
+                :disabled="!valid"
+                @click="handleNext"
+              >
+                Next: Review
+                <v-icon end>mdi-arrow-right</v-icon>
+              </v-btn>
+            </v-col>
+          </v-row>
         </v-form>
       </v-card-text>
     </v-card>
@@ -186,6 +213,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useChecklistStore } from '@/stores/checklistStore'
+
+const emit = defineEmits(['next', 'back'])
 
 const checklistStore = useChecklistStore()
 const form = ref(null)
@@ -275,6 +304,21 @@ onMounted(() => {
 const validateForm = async () => {
   const validation = await form.value?.validate()
   return validation?.valid || false
+}
+
+// Handle next step
+const handleNext = async () => {
+  const validation = await form.value?.validate()
+  if (validation?.valid) {
+    // Save to store
+    checklistStore.updateClientInfo(clientInfo.value)
+    emit('next')
+  }
+}
+
+// Handle back step
+const handleBack = () => {
+  emit('back')
 }
 
 // Expose validation method for parent component
