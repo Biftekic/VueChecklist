@@ -26,7 +26,7 @@
 
       <!-- Loading State -->
       <v-progress-linear
-        v-if="isLoading"
+        v-if="isLoading || isDeleting"
         indeterminate
         color="primary"
         class="mb-4"
@@ -146,34 +146,8 @@ const checklists = ref([])
 const isLoading = ref(false)
 const filterTab = ref('all')
 
-// Sample data for now
-const sampleChecklists = [
-  {
-    id: '1',
-    name: 'Weekly Cleaning',
-    clientName: 'John Doe',
-    createdAt: new Date().toISOString(),
-    status: 'active',
-    tasks: [
-      { id: '1', completed: true },
-      { id: '2', completed: true },
-      { id: '3', completed: false },
-      { id: '4', completed: false },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Deep Clean',
-    clientName: 'Jane Smith',
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    status: 'completed',
-    tasks: [
-      { id: '1', completed: true },
-      { id: '2', completed: true },
-      { id: '3', completed: true },
-    ]
-  }
-]
+// Loading indicator for delete operations
+const isDeleting = ref(false)
 
 // Computed
 const filteredChecklists = computed(() => {
@@ -206,13 +180,8 @@ const loadChecklists = async () => {
   isLoading.value = true
   try {
     // Load actual checklists from database via store
-    if (checklistStore.loadChecklists) {
-      await checklistStore.loadChecklists()
-      checklists.value = checklistStore.checklists || []
-    } else {
-      console.warn('checklistStore.loadChecklists not available, using sample data')
-      checklists.value = sampleChecklists
-    }
+    await checklistStore.loadChecklists()
+    checklists.value = checklistStore.checklists || []
   } catch (error) {
     console.error('Error loading checklists:', error)
     checklists.value = []
@@ -231,7 +200,18 @@ const viewChecklist = (id) => {
 
 const deleteChecklist = async (id) => {
   if (confirm('Are you sure you want to delete this checklist?')) {
-    checklists.value = checklists.value.filter(c => c.id !== id)
+    isDeleting.value = true
+    try {
+      await checklistStore.deleteChecklist(id)
+      // Refresh the list after deletion
+      await loadChecklists()
+    } catch (error) {
+      console.error('Error deleting checklist:', error)
+      // Show error notification if needed
+      alert('Failed to delete checklist. Please try again.')
+    } finally {
+      isDeleting.value = false
+    }
   }
 }
 
