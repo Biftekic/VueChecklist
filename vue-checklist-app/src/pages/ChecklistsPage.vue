@@ -182,6 +182,13 @@ const loadChecklists = async () => {
     // Load actual checklists from database via store
     await checklistStore.loadChecklists()
     checklists.value = checklistStore.checklists || []
+    console.log('Loaded checklists:', checklists.value)
+    // Debug: Log the first checklist if it exists
+    if (checklists.value.length > 0) {
+      console.log('First checklist details:', checklists.value[0])
+      console.log('First checklist ID:', checklists.value[0].id)
+      console.log('ID type:', typeof checklists.value[0].id)
+    }
   } catch (error) {
     console.error('Error loading checklists:', error)
     checklists.value = []
@@ -195,7 +202,28 @@ const navigateTo = (path) => {
 }
 
 const viewChecklist = (id) => {
-  router.push(`/checklist/${id}`)
+  console.log('=== viewChecklist called ===')
+  console.log('Checklist ID:', id)
+  console.log('ID type:', typeof id)
+  console.log('Router instance:', router)
+  
+  if (!id && id !== 0) {
+    console.error('No ID provided for checklist')
+    return
+  }
+  
+  const path = `/checklist/${id}`
+  console.log('Navigating to:', path)
+  
+  try {
+    router.push(path).then(() => {
+      console.log('Navigation successful')
+    }).catch((err) => {
+      console.error('Navigation failed:', err)
+    })
+  } catch (error) {
+    console.error('Error during navigation:', error)
+  }
 }
 
 const deleteChecklist = async (id) => {

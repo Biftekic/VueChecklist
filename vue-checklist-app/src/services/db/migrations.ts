@@ -4,7 +4,6 @@
  */
 
 import Dexie from 'dexie'
-import { db } from '../database'
 
 export interface Migration {
   version: number
@@ -200,8 +199,8 @@ export class MigrationManager {
   }
 }
 
-// Create migration manager instance
-export const migrationManager = new MigrationManager(db)
+// Migration manager will be created when needed
+let migrationManager: MigrationManager | null = null
 
 // Define migrations
 const migrations: Migration[] = [
@@ -312,16 +311,27 @@ const migrations: Migration[] = [
   }
 ]
 
-// Register all migrations
-migrations.forEach(migration => {
-  migrationManager.register(migration)
-})
+// Migrations will be registered when runMigrations is called
 
 /**
  * Run database migrations
  */
-export async function runMigrations(): Promise<void> {
+export async function runMigrations(database?: Dexie): Promise<void> {
   try {
+    // Create migration manager if not exists
+    if (!migrationManager && database) {
+      migrationManager = new MigrationManager(database)
+      // Register all migrations
+      migrations.forEach(migration => {
+        migrationManager!.register(migration)
+      })
+    }
+    
+    if (!migrationManager) {
+      console.warn('Migration manager not initialized, skipping migrations')
+      return
+    }
+    
     console.log('Checking for database migrations...')
     await migrationManager.migrate()
   } catch (error) {
@@ -339,6 +349,16 @@ export async function getMigrationStatus(): Promise<{
   pendingMigrations: number
   history: MigrationRecord[]
 }> {
+  if (!migrationManager) {
+    const latestVersion = Math.max(...migrations.map(m => m.version), 0)
+    return {
+      currentVersion: 0,
+      latestVersion,
+      pendingMigrations: migrations.length,
+      history: []
+    }
+  }
+  
   const currentVersion = await migrationManager.getCurrentVersion()
   const latestVersion = Math.max(...migrations.map(m => m.version))
   const history = await migrationManager.getHistory()

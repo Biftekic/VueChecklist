@@ -127,7 +127,7 @@ export const db = new VueChecklistDB()
 // Initialize database and run migrations
 db.on('ready', async function() {
   try {
-    await runMigrations()
+    await runMigrations(db)
   } catch (error) {
     console.error('Failed to run migrations:', error)
   }
