@@ -131,6 +131,13 @@ export const useChecklistStore = defineStore('checklist', () => {
     }
   }
   
+  const updatePropertyDetails = (details: Partial<CurrentChecklist>) => {
+    currentChecklist.value = {
+      ...currentChecklist.value,
+      ...details
+    }
+  }
+  
   const setSelectedRooms = (rooms: Room[]) => {
     currentChecklist.value.selectedRooms = rooms
   }
@@ -373,6 +380,7 @@ export const useChecklistStore = defineStore('checklist', () => {
     // Actions
     setIndustry,
     setPropertyDetails,
+    updatePropertyDetails,
     setSelectedRooms,
     setSelectedTasks,
     updateSelectedTasks,
