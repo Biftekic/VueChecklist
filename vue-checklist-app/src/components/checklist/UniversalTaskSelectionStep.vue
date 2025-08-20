@@ -7,7 +7,7 @@
       </v-card-title>
       
       <v-card-subtitle>
-        Assign tasks to rooms - all tasks are available for all rooms
+        Assign tasks to rooms and adjust quantities for items like windows, beds, etc.
       </v-card-subtitle>
 
       <v-card-text>
@@ -127,7 +127,6 @@
               <v-list-item
                 v-for="task in filteredTasks"
                 :key="task.id"
-                @click="toggleTask(task)"
                 class="task-item mb-1"
               >
                 <template v-slot:prepend>
@@ -141,9 +140,35 @@
                   <div class="d-flex align-center">
                     <span class="font-weight-medium">{{ task.name }}</span>
                     <v-spacer />
+                    
+                    <!-- Quantity controls for quantifiable tasks -->
+                    <div v-if="isTaskSelectedForRoom(task) && isQuantifiableTask(task)" class="d-flex align-center mr-3">
+                      <v-btn
+                        icon
+                        size="x-small"
+                        variant="tonal"
+                        @click.stop="decrementQuantity(task)"
+                        :disabled="getTaskQuantity(task) <= 1"
+                      >
+                        <v-icon size="small">mdi-minus</v-icon>
+                      </v-btn>
+                      <span class="mx-2 text-body-2 font-weight-medium">
+                        {{ getTaskQuantity(task) }}x
+                      </span>
+                      <v-btn
+                        icon
+                        size="x-small"
+                        variant="tonal"
+                        @click.stop="incrementQuantity(task)"
+                        :disabled="getTaskQuantity(task) >= 20"
+                      >
+                        <v-icon size="small">mdi-plus</v-icon>
+                      </v-btn>
+                    </div>
+                    
                     <v-chip size="x-small" variant="tonal" class="mr-2">
                       <v-icon start size="x-small">mdi-clock-outline</v-icon>
-                      {{ task.estimatedTime }} min
+                      {{ getTaskTotalTime(task) }} min
                     </v-chip>
                     <v-chip 
                       v-if="task.category"
@@ -163,14 +188,17 @@
                 <template v-if="getRoomsForTask(task).length > 0">
                   <div class="mt-1">
                     <v-chip
-                      v-for="roomName in getRoomsForTask(task)"
-                      :key="roomName"
+                      v-for="roomInfo in getRoomsForTaskWithQuantity(task)"
+                      :key="roomInfo.name"
                       size="x-small"
                       color="secondary"
                       variant="outlined"
                       class="mr-1"
                     >
-                      {{ roomName }}
+                      {{ roomInfo.name }}
+                      <span v-if="roomInfo.quantity > 1" class="ml-1 font-weight-bold">
+                        ({{ roomInfo.quantity }}x)
+                      </span>
                     </v-chip>
                   </div>
                 </template>
@@ -251,6 +279,11 @@
             density="comfortable"
             class="mb-4"
           />
+          <v-checkbox
+            v-model="customTask.isQuantifiable"
+            label="This task can have multiple quantities (like windows, beds, etc.)"
+            class="mb-4"
+          />
           <v-textarea
             v-model="customTask.description"
             label="Description (optional)"
@@ -291,7 +324,7 @@ const selectedRooms = computed(() => checklistStore.currentChecklist?.selectedRo
 const activeRoomIndex = ref(0)
 const currentRoom = computed(() => selectedRooms.value[activeRoomIndex.value])
 
-// Task management - store tasks per room
+// Task management - store tasks per room with quantities
 const roomTasks = ref({})
 const customTasks = ref([])
 
@@ -304,8 +337,28 @@ const showCustomTaskDialog = ref(false)
 const customTask = ref({
   name: '',
   estimatedTime: 15,
-  description: ''
+  description: '',
+  isQuantifiable: false
 })
+
+// List of keywords that indicate a task is quantifiable
+const quantifiableKeywords = [
+  'window', 'windows', 'bed', 'beds', 'chair', 'chairs', 'table', 'tables',
+  'desk', 'desks', 'door', 'doors', 'mirror', 'mirrors', 'sink', 'sinks',
+  'toilet', 'toilets', 'shelf', 'shelves', 'cabinet', 'cabinets', 'drawer', 'drawers',
+  'light', 'lights', 'lamp', 'lamps', 'fixture', 'fixtures', 'screen', 'screens',
+  'monitor', 'monitors', 'keyboard', 'keyboards', 'phone', 'phones', 'computer', 'computers',
+  'rug', 'rugs', 'carpet', 'carpets', 'curtain', 'curtains', 'blind', 'blinds',
+  'picture', 'pictures', 'frame', 'frames', 'appliance', 'appliances',
+  'counter', 'counters', 'surface', 'surfaces', 'workstation', 'workstations'
+]
+
+// Check if a task is quantifiable
+const isQuantifiableTask = (task) => {
+  if (task.isQuantifiable) return true
+  const taskNameLower = task.name.toLowerCase()
+  return quantifiableKeywords.some(keyword => taskNameLower.includes(keyword))
+}
 
 // Get all unique task categories
 const taskCategories = computed(() => {
@@ -363,7 +416,10 @@ onMounted(() => {
   if (existingTasks && existingTasks.length > 0) {
     existingTasks.forEach(task => {
       if (task.roomName && roomTasks.value[task.roomName]) {
-        roomTasks.value[task.roomName].push(task)
+        roomTasks.value[task.roomName].push({
+          ...task,
+          quantity: task.quantity || 1
+        })
       }
     })
   }
@@ -374,6 +430,21 @@ const isTaskSelectedForRoom = (task) => {
   const roomName = currentRoom.value?.name
   if (!roomName || !roomTasks.value[roomName]) return false
   return roomTasks.value[roomName].some(t => t.id === task.id)
+}
+
+// Get task quantity for current room
+const getTaskQuantity = (task) => {
+  const roomName = currentRoom.value?.name
+  if (!roomName || !roomTasks.value[roomName]) return 1
+  const roomTask = roomTasks.value[roomName].find(t => t.id === task.id)
+  return roomTask?.quantity || 1
+}
+
+// Get task total time (base time * quantity)
+const getTaskTotalTime = (task) => {
+  const quantity = getTaskQuantity(task)
+  const baseTime = task.estimatedTime || 0
+  return baseTime * quantity
 }
 
 // Toggle task selection for current room
@@ -391,8 +462,31 @@ const toggleTask = (task) => {
   } else {
     roomTasks.value[roomName].push({
       ...task,
-      roomName: roomName
+      roomName: roomName,
+      quantity: 1
     })
+  }
+}
+
+// Increment task quantity
+const incrementQuantity = (task) => {
+  const roomName = currentRoom.value?.name
+  if (!roomName || !roomTasks.value[roomName]) return
+  
+  const roomTask = roomTasks.value[roomName].find(t => t.id === task.id)
+  if (roomTask && roomTask.quantity < 20) {
+    roomTask.quantity++
+  }
+}
+
+// Decrement task quantity
+const decrementQuantity = (task) => {
+  const roomName = currentRoom.value?.name
+  if (!roomName || !roomTasks.value[roomName]) return
+  
+  const roomTask = roomTasks.value[roomName].find(t => t.id === task.id)
+  if (roomTask && roomTask.quantity > 1) {
+    roomTask.quantity--
   }
 }
 
@@ -402,11 +496,14 @@ const getTaskCountForRoom = (room) => {
   return roomTasks.value[room.name].length
 }
 
-// Get total time for a room
+// Get total time for a room (considering quantities)
 const getTimeForRoom = (room) => {
   if (!room || !roomTasks.value[room.name]) return 0
   const multiplier = checklistStore.getTimeMultiplier()
-  const baseTime = roomTasks.value[room.name].reduce((sum, task) => sum + (task.estimatedTime || 0), 0)
+  const baseTime = roomTasks.value[room.name].reduce((sum, task) => {
+    const taskTime = (task.estimatedTime || 0) * (task.quantity || 1)
+    return sum + taskTime
+  }, 0)
   return Math.round(baseTime * multiplier)
 }
 
@@ -416,6 +513,21 @@ const getRoomsForTask = (task) => {
   Object.entries(roomTasks.value).forEach(([roomName, tasks]) => {
     if (tasks.some(t => t.id === task.id)) {
       rooms.push(roomName)
+    }
+  })
+  return rooms
+}
+
+// Get rooms with quantities for a task
+const getRoomsForTaskWithQuantity = (task) => {
+  const rooms = []
+  Object.entries(roomTasks.value).forEach(([roomName, tasks]) => {
+    const roomTask = tasks.find(t => t.id === task.id)
+    if (roomTask) {
+      rooms.push({
+        name: roomName,
+        quantity: roomTask.quantity || 1
+      })
     }
   })
   return rooms
@@ -434,7 +546,8 @@ const selectAllVisible = () => {
     if (!roomTasks.value[roomName].some(t => t.id === task.id)) {
       roomTasks.value[roomName].push({
         ...task,
-        roomName: roomName
+        roomName: roomName,
+        quantity: 1
       })
     }
   })
@@ -455,7 +568,8 @@ const addCustomTask = () => {
     estimatedTime: customTask.value.estimatedTime,
     description: customTask.value.description,
     category: 'Custom',
-    isCustom: true
+    isCustom: true,
+    isQuantifiable: customTask.value.isQuantifiable
   }
   
   customTasks.value.push(newTask)
@@ -468,7 +582,8 @@ const addCustomTask = () => {
     }
     roomTasks.value[roomName].push({
       ...newTask,
-      roomName: roomName
+      roomName: roomName,
+      quantity: 1
     })
   }
   
@@ -476,7 +591,8 @@ const addCustomTask = () => {
   customTask.value = {
     name: '',
     estimatedTime: 15,
-    description: ''
+    description: '',
+    isQuantifiable: false
   }
   showCustomTaskDialog.value = false
 }
@@ -489,7 +605,10 @@ const totalTaskCount = computed(() => {
 const totalTime = computed(() => {
   const multiplier = checklistStore.getTimeMultiplier()
   const baseTime = Object.values(roomTasks.value).reduce((sum, tasks) => {
-    return sum + tasks.reduce((taskSum, task) => taskSum + (task.estimatedTime || 0), 0)
+    return sum + tasks.reduce((taskSum, task) => {
+      const taskTime = (task.estimatedTime || 0) * (task.quantity || 1)
+      return taskSum + taskTime
+    }, 0)
   }, 0)
   return Math.round(baseTime * multiplier)
 })
@@ -503,7 +622,9 @@ const handleNext = () => {
       allSelectedTasks.push({
         ...task,
         roomId: selectedRooms.value.find(r => r.name === roomName)?.id,
-        roomName: roomName
+        roomName: roomName,
+        quantity: task.quantity || 1,
+        totalTime: (task.estimatedTime || 0) * (task.quantity || 1)
       })
     })
   })
@@ -525,14 +646,20 @@ const handleNext = () => {
   border: 1px solid rgba(0,0,0,0.06);
   border-radius: 8px;
   transition: all 0.2s;
+  padding: 8px !important;
 }
 
 .task-item:hover {
   background-color: rgba(0,0,0,0.02);
-  transform: translateX(4px);
 }
 
 .v-chip-group {
   flex-wrap: wrap;
+}
+
+.v-btn[size="x-small"] {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
 }
 </style>
