@@ -6,7 +6,8 @@ import router from './router'
 import vuetify from './plugins/vuetify'
 // Import Vuetify styles explicitly
 import 'vuetify/styles'
-// Removed @mdi/font - now using tree-shaken @mdi/js icons
+// Import Material Design Icons font
+import '@mdi/font/css/materialdesignicons.css'
 import './assets/styles/main.scss'
 // Error handling and performance monitoring disabled
 // See BUGS.md for details on re-enabling these services
