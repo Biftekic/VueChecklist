@@ -27,7 +27,7 @@
         
         <!-- Step 3: Task Selection -->
         <div v-if="currentStep === 3">
-          <EnhancedTaskSelectionStep @next="nextStep" @back="previousStep" />
+          <UniversalTaskSelectionStep @next="nextStep" @back="previousStep" />
         </div>
         
         <!-- Step 4: Client Info -->
@@ -54,7 +54,7 @@ import MainLayout from '@/layouts/MainLayout.vue'
 // Import step components
 import PropertyDetailsStep from '@/components/checklist/PropertyDetailsStep.vue'
 import RoomSelectionStep from '@/components/checklist/RoomSelectionStep.vue'
-import EnhancedTaskSelectionStep from '@/components/checklist/EnhancedTaskSelectionStep.vue'
+import UniversalTaskSelectionStep from '@/components/checklist/UniversalTaskSelectionStep.vue'
 import ClientInfoStep from '@/components/steps/ClientInfoStep.vue'
 import ReviewStep from '@/components/steps/ReviewStep.vue'
 

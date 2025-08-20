@@ -7,10 +7,21 @@
       </v-card-title>
       
       <v-card-subtitle>
-        Choose which rooms need cleaning for {{ industryName }}
+        Choose rooms for your cleaning checklist
       </v-card-subtitle>
 
       <v-card-text>
+        <!-- Search Bar -->
+        <v-text-field
+          v-model="searchQuery"
+          label="Search rooms..."
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          density="comfortable"
+          clearable
+          class="mb-4"
+        />
+
         <!-- Quick Actions -->
         <v-row class="mb-4">
           <v-col cols="auto">
@@ -20,7 +31,7 @@
               @click="selectAll"
             >
               <v-icon start>mdi-checkbox-multiple-marked</v-icon>
-              Select All
+              Select All Visible
             </v-btn>
           </v-col>
           <v-col cols="auto">
@@ -30,7 +41,7 @@
               @click="deselectAll"
             >
               <v-icon start>mdi-checkbox-multiple-blank-outline</v-icon>
-              Deselect All
+              Clear Selection
             </v-btn>
           </v-col>
           <v-col>
@@ -40,35 +51,61 @@
           </v-col>
         </v-row>
 
-        <!-- Room Selection Cards -->
+        <!-- Category Tabs -->
+        <v-tabs
+          v-model="selectedCategory"
+          color="primary"
+          class="mb-4"
+          show-arrows
+        >
+          <v-tab value="all">All Rooms</v-tab>
+          <v-tab 
+            v-for="category in categories" 
+            :key="category"
+            :value="category"
+          >
+            {{ category }}
+          </v-tab>
+        </v-tabs>
+
+        <!-- Room Selection Grid -->
         <v-row>
           <v-col
-            v-for="room in availableRooms"
-            :key="room.name"
+            v-for="room in filteredRooms"
+            :key="room.id"
             cols="12"
             sm="6"
             md="4"
+            lg="3"
           >
             <v-card
-              :variant="isRoomSelected(room.name) ? 'flat' : 'outlined'"
-              :color="isRoomSelected(room.name) ? 'primary' : undefined"
-              class="cursor-pointer"
+              :variant="isRoomSelected(room.id) ? 'flat' : 'outlined'"
+              :color="isRoomSelected(room.id) ? 'primary' : undefined"
+              class="cursor-pointer room-card"
               @click="toggleRoom(room)"
             >
-              <v-card-text>
+              <v-card-text class="pa-3">
                 <v-row align="center" no-gutters>
                   <v-col cols="auto">
                     <v-checkbox-btn
-                      :model-value="isRoomSelected(room.name)"
-                      :color="isRoomSelected(room.name) ? 'white' : 'primary'"
+                      :model-value="isRoomSelected(room.id)"
+                      :color="isRoomSelected(room.id) ? 'white' : 'primary'"
                     />
                   </v-col>
                   <v-col>
-                    <div :class="isRoomSelected(room.name) ? 'text-white' : ''">
-                      <div class="font-weight-medium">{{ room.name }}</div>
+                    <div :class="isRoomSelected(room.id) ? 'text-white' : ''">
+                      <div class="d-flex align-center">
+                        <v-icon 
+                          size="small" 
+                          class="mr-1"
+                          :color="isRoomSelected(room.id) ? 'white' : 'grey'"
+                        >
+                          {{ room.icon || 'mdi-door' }}
+                        </v-icon>
+                        <div class="font-weight-medium">{{ room.name }}</div>
+                      </div>
                       <div class="text-caption">
-                        {{ room.tasks.length }} tasks • 
-                        {{ calculateRoomTime(room.tasks) }} min
+                        {{ room.category }}
                       </div>
                     </div>
                   </v-col>
@@ -79,17 +116,22 @@
         </v-row>
 
         <!-- Custom Room Addition -->
-        <v-card variant="outlined" class="mt-4">
+        <v-card variant="outlined" class="mt-6">
+          <v-card-title class="text-subtitle-1">
+            <v-icon size="small" class="mr-2">mdi-plus-circle</v-icon>
+            Add Custom Rooms
+          </v-card-title>
           <v-card-text>
             <v-row align="center">
               <v-col>
                 <v-text-field
                   v-model="customRoomName"
-                  label="Add Custom Room"
+                  label="Enter custom room name"
                   variant="outlined"
                   density="compact"
                   hide-details
                   @keyup.enter="addCustomRoom"
+                  placeholder="e.g., Wine Cellar, Studio, etc."
                 />
               </v-col>
               <v-col cols="auto">
@@ -109,14 +151,16 @@
 
         <!-- Custom Rooms List -->
         <div v-if="customRooms.length > 0" class="mt-4">
-          <div class="text-subtitle-2 mb-2">Custom Rooms</div>
+          <div class="text-subtitle-2 mb-2">Custom Rooms Added</div>
           <v-chip
             v-for="room in customRooms"
             :key="room"
             class="ma-1"
+            color="secondary"
             closable
             @click:close="removeCustomRoom(room)"
           >
+            <v-icon start size="small">mdi-home-plus</v-icon>
             {{ room }}
           </v-chip>
         </div>
@@ -155,34 +199,43 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useChecklistStore } from '@/stores/checklistStore'
-import { getRoomsByIndustry, calculateRoomTime as calcTime } from '@/data/templates'
+import { COMMON_ROOMS, getRoomCategories, searchRooms } from '@/data/commonRooms'
 
 const emit = defineEmits(['next', 'back'])
 const checklistStore = useChecklistStore()
 
-// Get industry info
-const industry = computed(() => checklistStore.currentChecklist?.industry)
-const industryName = computed(() => {
-  const names = {
-    office: 'Office Cleaning',
-    residential: 'Residential Cleaning',
-    medical: 'Medical Facility',
-    hospitality: 'Hotel/Hospitality',
-    restaurant: 'Restaurant',
-    retail: 'Retail Store'
-  }
-  return names[industry.value] || 'Cleaning Service'
-})
+// Search and filtering
+const searchQuery = ref('')
+const selectedCategory = ref('all')
 
-// Available rooms for selected industry
-const availableRooms = computed(() => {
-  return getRoomsByIndustry(industry.value)
-})
+// Get all categories
+const categories = getRoomCategories()
 
 // Selected rooms
 const selectedRooms = ref([])
 const customRooms = ref([])
 const customRoomName = ref('')
+
+// Filter rooms based on search and category
+const filteredRooms = computed(() => {
+  let rooms = [...COMMON_ROOMS]
+  
+  // Filter by category
+  if (selectedCategory.value !== 'all') {
+    rooms = rooms.filter(room => room.category === selectedCategory.value)
+  }
+  
+  // Filter by search query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    rooms = rooms.filter(room => 
+      room.name.toLowerCase().includes(query) ||
+      room.category.toLowerCase().includes(query)
+    )
+  }
+  
+  return rooms
+})
 
 // Load existing selections
 onMounted(() => {
@@ -194,35 +247,44 @@ onMounted(() => {
 })
 
 // Check if room is selected
-const isRoomSelected = (roomName) => {
-  return selectedRooms.value.some(r => r.name === roomName)
+const isRoomSelected = (roomId) => {
+  return selectedRooms.value.some(r => r.id === roomId)
 }
 
 // Toggle room selection
 const toggleRoom = (room) => {
-  const index = selectedRooms.value.findIndex(r => r.name === room.name)
+  const index = selectedRooms.value.findIndex(r => r.id === room.id)
   if (index > -1) {
     selectedRooms.value.splice(index, 1)
   } else {
-    selectedRooms.value.push(room)
+    selectedRooms.value.push({
+      id: room.id,
+      name: room.name,
+      category: room.category,
+      icon: room.icon,
+      isCustom: false
+    })
   }
 }
 
-// Select all rooms
+// Select all visible rooms
 const selectAll = () => {
-  selectedRooms.value = [...availableRooms.value]
+  filteredRooms.value.forEach(room => {
+    if (!isRoomSelected(room.id)) {
+      selectedRooms.value.push({
+        id: room.id,
+        name: room.name,
+        category: room.category,
+        icon: room.icon,
+        isCustom: false
+      })
+    }
+  })
 }
 
 // Deselect all rooms
 const deselectAll = () => {
   selectedRooms.value = []
-}
-
-// Calculate room time with multiplier
-const calculateRoomTime = (tasks) => {
-  const baseTime = calcTime(tasks)
-  const multiplier = checklistStore.getTimeMultiplier()
-  return Math.round(baseTime * multiplier)
 }
 
 // Add custom room
@@ -248,8 +310,9 @@ const handleNext = () => {
   const allRooms = [
     ...selectedRooms.value,
     ...customRooms.value.map(name => ({
+      id: `custom-${name.toLowerCase().replace(/\s+/g, '-')}`,
       name,
-      tasks: [],
+      category: 'Custom',
       isCustom: true
     }))
   ]
@@ -267,8 +330,12 @@ const handleNext = () => {
   transition: all 0.2s;
 }
 
-.cursor-pointer:hover {
+.room-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.v-tabs {
+  border-bottom: 1px solid rgba(0,0,0,0.12);
 }
 </style>
