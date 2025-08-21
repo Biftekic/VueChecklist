@@ -261,7 +261,14 @@ export const useChecklistStore = defineStore('checklist', () => {
         
         // Save client if new
         if (currentChecklist.value.clientInfo?.name) {
-          const clientId = await databaseService.saveClient(currentChecklist.value.clientInfo)
+          // Extract only the fields that the client record expects
+          const clientData = {
+            name: currentChecklist.value.clientInfo.name,
+            email: currentChecklist.value.clientInfo.email,
+            phone: currentChecklist.value.clientInfo.phone,
+            address: currentChecklist.value.clientInfo.address
+          }
+          const clientId = await databaseService.saveClient(clientData)
           console.log('Client saved with ID:', clientId)
           
           // Save client preferences for future use

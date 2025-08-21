@@ -468,30 +468,49 @@ const generatePDF = () => {
 
 // Save checklist
 const saveChecklist = async () => {
+  // Validate checklist name first
+  if (!checklistName.value || checklistName.value.trim() === '') {
+    appStore.showNotification('Please enter a checklist name', 'warning')
+    return
+  }
+  
   saving.value = true
   
   try {
     // Set the checklist name
     checklistStore.updateChecklistName(checklistName.value)
     
+    console.log('Starting save process...')
+    console.log('Checklist name:', checklistName.value)
+    console.log('Save option:', saveOption.value)
+    console.log('Current checklist data:', checklist.value)
+    
     // Save based on option
     if (saveOption.value === 'checklist' || saveOption.value === 'both') {
-      await checklistStore.saveChecklist()
+      console.log('Saving as checklist...')
+      const checklistId = await checklistStore.saveChecklist()
+      console.log('Checklist saved with ID:', checklistId)
     }
     
     if (saveOption.value === 'template' || saveOption.value === 'both') {
-      await checklistStore.saveAsTemplate(checklistName.value)
+      console.log('Saving as template...')
+      const templateId = await checklistStore.saveAsTemplate(checklistName.value)
+      console.log('Template saved with ID:', templateId)
     }
     
     // Show success message
     appStore.showNotification('Checklist saved successfully!', 'success')
     
-    // Navigate to checklists page
-    router.push('/checklists')
+    // Navigate immediately after successful save
+    console.log('Navigating to checklists page...')
+    await router.push('/checklists')
+    console.log('Navigation successful')
+    
+    // Reset saving state after navigation completes
+    saving.value = false
   } catch (error) {
     console.error('Error saving checklist:', error)
-    appStore.showNotification('Error saving checklist', 'error')
-  } finally {
+    appStore.showNotification(`Error saving checklist: ${error.message || 'Unknown error'}`, 'error')
     saving.value = false
   }
 }
