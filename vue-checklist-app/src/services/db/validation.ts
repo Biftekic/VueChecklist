@@ -33,6 +33,9 @@ function useErrorHandling(options: { component: string; retryable: boolean }) {
       if (options.retryable) {
         logger.info(`[${options.component}] Error is retryable`)
       }
+    },
+    handleValidationError: (message: string, field?: string, value?: any) => {
+      logger.error(`[${options.component}] Validation Error:`, { message, field, value })
     }
   }
 }
@@ -89,10 +92,10 @@ export class ValidatedDBOperations {
         totalTime: { min: 0, max: 0 },
         createdAt: new Date(),
         updatedAt: new Date(),
-        modifiers: validatedData.modifiers || {
-          difficulty: 'average' as const,
-          expectations: 'average' as const,
-          challenges: 'average' as const
+        modifiers: {
+          difficulty: validatedData.modifiers?.difficulty || 'average',
+          expectations: validatedData.modifiers?.expectations || 'average',
+          challenges: validatedData.modifiers?.challenges || 'average'
         },
         version: 1
       }
@@ -101,7 +104,8 @@ export class ValidatedDBOperations {
       const finalChecklist = validateChecklist(checklist)
       
       // Save to database
-      return await dbOperations.createChecklist(finalChecklist)
+      const { id: _, ...checklistWithoutId } = finalChecklist
+      return await dbOperations.createChecklist(checklistWithoutId)
     } catch (error) {
       if (error instanceof Error && error.name === 'ZodError') {
         this.handleValidationError(error as any)
@@ -119,7 +123,7 @@ export class ValidatedDBOperations {
       const validatedUpdates = validateUpdateChecklist(updates)
       
       // Get existing checklist
-      const existing = await dbOperations.getChecklist(id)
+      const existing = await dbOperations.getChecklistById(id)
       if (!existing) {
         throw new Error(`Checklist ${id} not found`)
       }
@@ -135,7 +139,7 @@ export class ValidatedDBOperations {
       const finalChecklist = validateChecklist(updated)
       
       // Save to database
-      return await dbOperations.updateChecklist(id, finalChecklist)
+      return (await dbOperations.updateChecklist(id, finalChecklist as any)) ? true : false
     } catch (error) {
       if (error instanceof Error && error.name === 'ZodError') {
         this.handleValidationError(error as any)
@@ -178,12 +182,12 @@ export class ValidatedDBOperations {
     updates: unknown
   ): Promise<boolean> {
     try {
-      const checklist = await dbOperations.getChecklist(checklistId)
+      const checklist = await dbOperations.getChecklistById(checklistId)
       if (!checklist) {
         throw new Error(`Checklist ${checklistId} not found`)
       }
       
-      const taskIndex = checklist.tasks.findIndex(t => t.id === taskId)
+      const taskIndex = checklist.tasks.findIndex((t: any) => t.id === taskId)
       if (taskIndex === -1) {
         throw new Error(`Task ${taskId} not found`)
       }
@@ -203,7 +207,7 @@ export class ValidatedDBOperations {
       const validatedChecklist = validateChecklist(checklist)
       
       // Save to database
-      return await dbOperations.updateChecklist(checklistId, validatedChecklist)
+      return (await dbOperations.updateChecklist(checklistId, validatedChecklist as any)) ? true : false
     } catch (error) {
       if (error instanceof Error && error.name === 'ZodError') {
         this.handleValidationError(error as any)

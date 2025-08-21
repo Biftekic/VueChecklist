@@ -34,7 +34,6 @@ export function sanitizeHTML(html: string): string {
       'blockquote', 'code', 'pre'
     ],
     ALLOWED_ATTR: ['class', 'style'],
-    ALLOWED_STYLE_PROPS: ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration'],
     KEEP_CONTENT: true
   })
 }

@@ -647,7 +647,7 @@ class RouteOptimizerService {
         
         let solution: RouteSolution
         const algo = options.algorithm === 'cluster_first' ? 'nearest_neighbor' : options.algorithm
-        switch (algo) {
+        switch (algo as 'nearest_neighbor' | 'genetic' | 'simulated_annealing') {
           case 'genetic':
             solution = this.solveGenetic(cluster.locations, vehicle, options)
             break

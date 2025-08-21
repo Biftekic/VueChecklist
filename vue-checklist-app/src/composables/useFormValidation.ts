@@ -48,7 +48,7 @@ export function useFormValidation<T extends Record<string, any>>(
   const errors = ref<Record<keyof T, string>>({} as Record<keyof T, string>)
   const isDirty = ref(false)
   const isSubmitting = ref(false)
-  const touched = ref<Set<keyof T>>(new Set())
+  const touched = ref<Set<string>>(new Set())
 
   // Computed
   const isValid = computed(() => {
@@ -202,7 +202,7 @@ export function useFormValidation<T extends Record<string, any>>(
 
   // Public methods
   const validateField = (field: keyof T): boolean => {
-    touched.value.add(field as keyof T)
+    touched.value.add(String(field))
     return validateFieldInternal(field as keyof T)
   }
 
@@ -211,7 +211,7 @@ export function useFormValidation<T extends Record<string, any>>(
     let isFormValid = true
 
     for (const field of Object.keys(form)) {
-      touched.value.add(field as keyof T)
+      touched.value.add(String(field))
       const isFieldValid = validateFieldInternal(field as keyof T)
       if (!isFieldValid) {
         isFormValid = false
@@ -238,7 +238,7 @@ export function useFormValidation<T extends Record<string, any>>(
 
   const setFieldValue = (field: keyof T, value: any) => {
     (form as any)[field] = value
-    if (touched.value.has(field as keyof T)) {
+    if (touched.value.has(String(field))) {
       validateField(field as keyof T)
     }
   }

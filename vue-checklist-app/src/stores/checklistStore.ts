@@ -362,7 +362,17 @@ export const useChecklistStore = defineStore('checklist', () => {
       const record = await databaseService.getChecklist(id)
       if (record) {
         // Load tasks for the checklist
-        const tasks = await databaseService.getTasksByChecklistId(id)
+        const taskRecords = await databaseService.getTasksByChecklistId(id)
+        const tasks: Task[] = taskRecords.map(tr => ({
+          id: tr.id || '',
+          roomId: tr.room,
+          name: tr.name,
+          description: '',
+          estimatedTime: tr.estimatedTime || 0,
+          completed: false,
+          chemicals: tr.chemicals || [],
+          tools: tr.tools || []
+        }))
         
         // Transform ChecklistRecord to Checklist
         const checklist: Checklist = {
