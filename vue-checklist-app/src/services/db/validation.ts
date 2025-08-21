@@ -19,6 +19,24 @@ import {
   type ClientInfo
 } from '@/schemas/client.schema'
 
+import { dbOperations } from './index'
+import { logger } from '@/services/logger'
+
+// Type definitions
+type Client = ClientInfo
+
+// Simple error handling helper
+function useErrorHandling(options: { component: string; retryable: boolean }) {
+  return {
+    handleError: (error: Error) => {
+      logger.error(`[${options.component}] Error:`, error)
+      if (options.retryable) {
+        logger.info(`[${options.component}] Error is retryable`)
+      }
+    }
+  }
+}
+
 import {
   validateTask,
   safeValidateTask,
@@ -72,9 +90,9 @@ export class ValidatedDBOperations {
         createdAt: new Date(),
         updatedAt: new Date(),
         modifiers: validatedData.modifiers || {
-          difficulty: 'average',
-          expectations: 'average',
-          challenges: 'average'
+          difficulty: 'average' as const,
+          expectations: 'average' as const,
+          challenges: 'average' as const
         },
         version: 1
       }
@@ -143,7 +161,7 @@ export class ValidatedDBOperations {
       } else {
         invalid.push({
           data: checklist,
-          errors: result.error.errors
+          errors: (result.error as any).errors || []
         })
       }
     }
@@ -173,7 +191,7 @@ export class ValidatedDBOperations {
       // Merge and validate task
       const updatedTask = {
         ...checklist.tasks[taskIndex],
-        ...updates
+        ...(typeof updates === 'object' && updates !== null ? updates : {})
       }
       const validatedTask = validateTask(updatedTask)
       

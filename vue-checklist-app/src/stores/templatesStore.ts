@@ -57,8 +57,17 @@ export const useTemplatesStore = defineStore('templates', () => {
     isLoading.value = true
     try {
       const dbTemplates = await dbOperations.getAllTemplates()
-      dbTemplates.forEach((template: Template) => {
-        templates.value.set(template.id, template)
+      dbTemplates.forEach((template) => {
+        if (template.id) {
+          const storeTemplate: Template = {
+            id: template.id,
+            name: template.name,
+            industry: template.industry,
+            createdAt: template.createdAt,
+            updatedAt: template.updatedAt
+          }
+          templates.value.set(template.id, storeTemplate)
+        }
       })
     } catch (error) {
       logger.error('Error loading templates:', error)
@@ -77,10 +86,17 @@ export const useTemplatesStore = defineStore('templates', () => {
     // Try loading from database if not in memory
     try {
       const dbTemplate = await dbOperations.getTemplateById(id)
-      if (dbTemplate) {
-        templates.value.set(id, dbTemplate)
-        activeTemplate.value = dbTemplate
-        return dbTemplate
+      if (dbTemplate && dbTemplate.id) {
+        const storeTemplate: Template = {
+          id: dbTemplate.id,
+          name: dbTemplate.name,
+          industry: dbTemplate.industry,
+          createdAt: dbTemplate.createdAt,
+          updatedAt: dbTemplate.updatedAt
+        }
+        templates.value.set(id, storeTemplate)
+        activeTemplate.value = storeTemplate
+        return storeTemplate
       }
     } catch (error) {
       logger.error('Error selecting template:', error)

@@ -398,7 +398,7 @@ class DatabaseService {
       const data: ExportData = JSON.parse(jsonData)
       
       // Clear existing data
-      await db.transaction('rw', db.checklists, db.templates, db.tasks, db.clients, db.settings, async () => {
+      await db.transaction('rw', db.checklists, db.templates, db.tasks, db.clients, async () => {
         await db.checklists.clear()
         await db.templates.clear()
         await db.tasks.clear()
@@ -422,7 +422,7 @@ class DatabaseService {
   
   // Clear all data
   async clearAllData(): Promise<void> {
-    await db.transaction('rw', db.checklists, db.templates, db.tasks, db.clients, db.settings, db.syncQueue, async () => {
+    await db.transaction('rw', db.checklists, db.templates, db.tasks, db.clients, async () => {
       await db.checklists.clear()
       await db.templates.clear()
       await db.tasks.clear()

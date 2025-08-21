@@ -63,7 +63,7 @@ export function useFormValidation<T extends Record<string, any>>(
       isDirty.value = true
       // Auto-validate touched fields
       touched.value.forEach(field => {
-        validateField(field)
+        validateField(field as keyof T)
       })
     },
     { deep: true }
@@ -202,8 +202,8 @@ export function useFormValidation<T extends Record<string, any>>(
 
   // Public methods
   const validateField = (field: keyof T): boolean => {
-    touched.value.add(field)
-    return validateFieldInternal(field)
+    touched.value.add(field as keyof T)
+    return validateFieldInternal(field as keyof T)
   }
 
   const validate = async (): Promise<boolean> => {
@@ -238,8 +238,8 @@ export function useFormValidation<T extends Record<string, any>>(
 
   const setFieldValue = (field: keyof T, value: any) => {
     (form as any)[field] = value
-    if (touched.value.has(field)) {
-      validateField(field)
+    if (touched.value.has(field as keyof T)) {
+      validateField(field as keyof T)
     }
   }
 

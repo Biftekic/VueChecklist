@@ -304,7 +304,7 @@ export const useChecklistStore = defineStore('checklist', () => {
     try {
       const templateData = {
         name,
-        industry: currentChecklist.value.industry,
+        industry: currentChecklist.value.industry || '',
         rooms: currentChecklist.value.selectedRooms,
         tasks: currentChecklist.value.selectedTasks
       }
@@ -328,7 +328,26 @@ export const useChecklistStore = defineStore('checklist', () => {
     try {
       const data = await databaseService.getAllChecklists()
       logger.debug('Loaded from database:', data)
-      checklists.value = data
+      // Transform ChecklistRecord to Checklist
+      checklists.value = data.map(record => ({
+        id: record.id || '',
+        name: record.name || null,
+        industry: record.industry || null,
+        propertySize: null,
+        numberOfFloors: null,
+        difficulty: 'Average' as const,
+        expectations: 'Reasonable' as const,
+        challenges: 'Moderate' as const,
+        selectedRooms: [],
+        selectedTasks: [],
+        clientInfo: record.clientName ? { name: record.clientName } : null,
+        createdAt: record.createdAt ? new Date(record.createdAt) : new Date(),
+        updatedAt: record.updatedAt ? new Date(record.updatedAt) : undefined,
+        status: (record.status as 'active' | 'completed' | 'archived') || 'active',
+        clientName: record.clientName,
+        frequency: record.frequency,
+        qualityScore: record.qualityScore
+      }))
       logger.debug('Store checklists after load:', checklists.value)
     } catch (error) {
       logger.error('Error loading checklists:', error)
@@ -340,13 +359,34 @@ export const useChecklistStore = defineStore('checklist', () => {
   
   const loadChecklist = async (id: string): Promise<Checklist | undefined> => {
     try {
-      const checklist = await databaseService.getChecklist(id)
-      if (checklist) {
+      const record = await databaseService.getChecklist(id)
+      if (record) {
         // Load tasks for the checklist
         const tasks = await databaseService.getTasksByChecklistId(id)
-        checklist.selectedTasks = tasks
+        
+        // Transform ChecklistRecord to Checklist
+        const checklist: Checklist = {
+          id: record.id || id,
+          name: record.name || null,
+          industry: record.industry || null,
+          propertySize: null,
+          numberOfFloors: null,
+          difficulty: 'Average' as const,
+          expectations: 'Reasonable' as const,
+          challenges: 'Moderate' as const,
+          selectedRooms: [],
+          selectedTasks: tasks,
+          clientInfo: record.clientName ? { name: record.clientName } : null,
+          createdAt: record.createdAt ? new Date(record.createdAt) : new Date(),
+          updatedAt: record.updatedAt ? new Date(record.updatedAt) : undefined,
+          status: (record.status as 'active' | 'completed' | 'archived') || 'active',
+          clientName: record.clientName,
+          frequency: record.frequency,
+          qualityScore: record.qualityScore
+        }
+        return checklist
       }
-      return checklist
+      return undefined
     } catch (error) {
       logger.error('Error loading checklist:', error)
       throw error
