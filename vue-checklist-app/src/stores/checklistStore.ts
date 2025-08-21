@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import { databaseService } from '@/services/database'
 import { useAppStore } from './app'
+import { logger } from '@/services/logger'
 
 // Types
 export interface ClientInfo {
@@ -193,12 +194,12 @@ export const useChecklistStore = defineStore('checklist', () => {
         // Apply preferences to current checklist
         if (preferences.customizations) {
           // Apply customizations here
-          console.log('Client preferences loaded:', preferences)
+          logger.debug('Client preferences loaded:', preferences)
         }
         return preferences
       }
     } catch (error) {
-      console.error('Error loading client preferences:', error)
+      logger.error('Error loading client preferences:', error)
     }
     return null
   }
@@ -236,27 +237,27 @@ export const useChecklistStore = defineStore('checklist', () => {
         status: 'active'
       }
       
-      console.log('Saving checklist data:', checklistData)
+      logger.debug('Saving checklist data:', checklistData)
       
       // Debug: Log the exact structure being saved
-      console.log('Debug - Selected rooms:', currentChecklist.value.selectedRooms)
-      console.log('Debug - Selected tasks:', currentChecklist.value.selectedTasks)
-      console.log('Debug - Client info:', currentChecklist.value.clientInfo)
+      logger.debug('Debug - Selected rooms:', currentChecklist.value.selectedRooms)
+      logger.debug('Debug - Selected tasks:', currentChecklist.value.selectedTasks)
+      logger.debug('Debug - Client info:', currentChecklist.value.clientInfo)
       
       try {
         // Clean the data to ensure it's serializable
         const cleanData = JSON.parse(JSON.stringify(checklistData))
-        console.log('Cleaned data for save:', cleanData)
+        logger.debug('Cleaned data for save:', cleanData)
         
         const id = await databaseService.saveChecklist(cleanData)
-        console.log('Checklist saved with ID:', id)
+        logger.debug('Checklist saved with ID:', id)
         
         // Save tasks
         if (currentChecklist.value.selectedTasks?.length > 0) {
           // Clean tasks data to remove Vue reactive properties
           const cleanTasks = JSON.parse(JSON.stringify(currentChecklist.value.selectedTasks))
           await databaseService.saveTasks(cleanTasks, id)
-          console.log('Tasks saved for checklist:', id)
+          logger.debug('Tasks saved for checklist:', id)
         }
         
         // Save client if new
@@ -269,7 +270,7 @@ export const useChecklistStore = defineStore('checklist', () => {
             address: currentChecklist.value.clientInfo.address
           }
           const clientId = await databaseService.saveClient(clientData)
-          console.log('Client saved with ID:', clientId)
+          logger.debug('Client saved with ID:', clientId)
           
           // Save client preferences for future use
           if (clientId && customizations) {
@@ -290,11 +291,11 @@ export const useChecklistStore = defineStore('checklist', () => {
         
         return id
       } catch (innerError) {
-        console.error('Detailed error during save:', innerError)
+        logger.error('Detailed error during save:', innerError)
         throw innerError
       }
     } catch (error) {
-      console.error('Error saving checklist:', error)
+      logger.error('Error saving checklist:', error)
       throw error
     }
   }
@@ -317,7 +318,7 @@ export const useChecklistStore = defineStore('checklist', () => {
       
       return id
     } catch (error) {
-      console.error('Error saving template:', error)
+      logger.error('Error saving template:', error)
       throw error
     }
   }
@@ -326,11 +327,11 @@ export const useChecklistStore = defineStore('checklist', () => {
     isLoading.value = true
     try {
       const data = await databaseService.getAllChecklists()
-      console.log('Loaded from database:', data)
+      logger.debug('Loaded from database:', data)
       checklists.value = data
-      console.log('Store checklists after load:', checklists.value)
+      logger.debug('Store checklists after load:', checklists.value)
     } catch (error) {
-      console.error('Error loading checklists:', error)
+      logger.error('Error loading checklists:', error)
       throw error
     } finally {
       isLoading.value = false
@@ -347,7 +348,7 @@ export const useChecklistStore = defineStore('checklist', () => {
       }
       return checklist
     } catch (error) {
-      console.error('Error loading checklist:', error)
+      logger.error('Error loading checklist:', error)
       throw error
     }
   }
@@ -357,7 +358,7 @@ export const useChecklistStore = defineStore('checklist', () => {
       await databaseService.deleteChecklist(id)
       await loadChecklists()
     } catch (error) {
-      console.error('Error deleting checklist:', error)
+      logger.error('Error deleting checklist:', error)
       throw error
     }
   }
@@ -375,7 +376,7 @@ export const useChecklistStore = defineStore('checklist', () => {
         }
       }
     } catch (error) {
-      console.error('Error updating task status:', error)
+      logger.error('Error updating task status:', error)
       throw error
     }
   }

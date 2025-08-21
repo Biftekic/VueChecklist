@@ -1,5 +1,6 @@
+import { logger } from "@/services/logger"
 import { ref, reactive, computed, watch } from 'vue'
-import type { Ref, ComputedRef } from 'vue'
+import type { Ref, ComputedRef, UnwrapRef } from 'vue'
 
 export interface ValidationRule {
   required?: boolean | string
@@ -24,7 +25,7 @@ export interface ValidationError {
 }
 
 export interface UseFormValidationReturn<T> {
-  form: T
+  form: UnwrapRef<T>
   errors: Ref<Record<keyof T, string>>
   isValid: ComputedRef<boolean>
   isDirty: Ref<boolean>
@@ -35,7 +36,7 @@ export interface UseFormValidationReturn<T> {
   clearFieldError: (field: keyof T) => void
   reset: () => void
   setFieldValue: (field: keyof T, value: any) => void
-  submit: (handler: (form: T) => Promise<void>) => Promise<void>
+  submit: (handler: (form: UnwrapRef<T>) => Promise<void>) => Promise<void>
 }
 
 export function useFormValidation<T extends Record<string, any>>(
@@ -70,7 +71,7 @@ export function useFormValidation<T extends Record<string, any>>(
 
   // Validation logic
   const validateFieldInternal = (field: keyof T): boolean => {
-    const value = form[field]
+    const value = (form as any)[field]
     const fieldRules = rules[field as string]
     
     if (!fieldRules) return true
@@ -86,103 +87,97 @@ export function useFormValidation<T extends Record<string, any>>(
           const message = typeof rule.required === 'string' 
             ? rule.required 
             : `${String(field)} is required`
-          errors.value[field] = message
+          ;(errors.value as any)[field] = message
           return false
         }
       }
 
       // Skip other validations if value is empty and not required
       if (!value && !rule.required) {
-        delete errors.value[field]
+        delete (errors.value as any)[field]
         return true
       }
 
       // Email validation
-      if (rule.email) {
+      if (rule.email && value) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(String(value))) {
           const message = typeof rule.email === 'string'
             ? rule.email
             : `${String(field)} must be a valid email`
-          errors.value[field] = message
+          ;(errors.value as any)[field] = message
           return false
         }
       }
 
       // Phone validation
-      if (rule.phone) {
-        const phoneRegex = /^[\d\s+\-()]+$/
+      if (rule.phone && value) {
+        const phoneRegex = /^[\d\s\-\+\(\)]+$/
         if (!phoneRegex.test(String(value))) {
           const message = typeof rule.phone === 'string'
             ? rule.phone
             : `${String(field)} must be a valid phone number`
-          errors.value[field] = message
-          return false
-        }
-      }
-
-      // Min length validation
-      if (rule.minLength !== undefined) {
-        const minLength = typeof rule.minLength === 'string' 
-          ? parseInt(rule.minLength) 
-          : rule.minLength
-        if (String(value).length < minLength) {
-          const message = typeof rule.minLength === 'string'
-            ? rule.minLength
-            : `${String(field)} must be at least ${minLength} characters`
-          errors.value[field] = message
-          return false
-        }
-      }
-
-      // Max length validation
-      if (rule.maxLength !== undefined) {
-        const maxLength = typeof rule.maxLength === 'string'
-          ? parseInt(rule.maxLength)
-          : rule.maxLength
-        if (String(value).length > maxLength) {
-          const message = typeof rule.maxLength === 'string'
-            ? rule.maxLength
-            : `${String(field)} must be at most ${maxLength} characters`
-          errors.value[field] = message
+          ;(errors.value as any)[field] = message
           return false
         }
       }
 
       // Min value validation
-      if (rule.min !== undefined) {
-        const min = typeof rule.min === 'string' ? parseFloat(rule.min) : rule.min
-        if (Number(value) < min) {
-          const message = typeof rule.min === 'string'
+      if (rule.min !== undefined && value !== undefined) {
+        const minValue = typeof rule.min === 'string' ? parseFloat(rule.min) : rule.min
+        if (Number(value) < minValue) {
+          const message = typeof rule.min === 'string' && isNaN(parseFloat(rule.min))
             ? rule.min
-            : `${String(field)} must be at least ${min}`
-          errors.value[field] = message
+            : `${String(field)} must be at least ${minValue}`
+          ;(errors.value as any)[field] = message
           return false
         }
       }
 
       // Max value validation
-      if (rule.max !== undefined) {
-        const max = typeof rule.max === 'string' ? parseFloat(rule.max) : rule.max
-        if (Number(value) > max) {
-          const message = typeof rule.max === 'string'
+      if (rule.max !== undefined && value !== undefined) {
+        const maxValue = typeof rule.max === 'string' ? parseFloat(rule.max) : rule.max
+        if (Number(value) > maxValue) {
+          const message = typeof rule.max === 'string' && isNaN(parseFloat(rule.max))
             ? rule.max
-            : `${String(field)} must be at most ${max}`
-          errors.value[field] = message
+            : `${String(field)} must be at most ${maxValue}`
+          ;(errors.value as any)[field] = message
+          return false
+        }
+      }
+
+      // Min length validation
+      if (rule.minLength !== undefined && value) {
+        const minLength = typeof rule.minLength === 'string' ? parseInt(rule.minLength) : rule.minLength
+        if (String(value).length < minLength) {
+          const message = typeof rule.minLength === 'string' && isNaN(parseInt(rule.minLength))
+            ? rule.minLength
+            : `${String(field)} must be at least ${minLength} characters`
+          ;(errors.value as any)[field] = message
+          return false
+        }
+      }
+
+      // Max length validation
+      if (rule.maxLength !== undefined && value) {
+        const maxLength = typeof rule.maxLength === 'string' ? parseInt(rule.maxLength) : rule.maxLength
+        if (String(value).length > maxLength) {
+          const message = typeof rule.maxLength === 'string' && isNaN(parseInt(rule.maxLength))
+            ? rule.maxLength
+            : `${String(field)} must be at most ${maxLength} characters`
+          ;(errors.value as any)[field] = message
           return false
         }
       }
 
       // Pattern validation
-      if (rule.pattern) {
-        const pattern = rule.pattern instanceof RegExp 
-          ? rule.pattern 
-          : new RegExp(rule.pattern)
+      if (rule.pattern && value) {
+        const pattern = typeof rule.pattern === 'string' ? new RegExp(rule.pattern) : rule.pattern
         if (!pattern.test(String(value))) {
           const message = typeof rule.pattern === 'string'
-            ? rule.pattern
+            ? `${String(field)} format is invalid`
             : `${String(field)} format is invalid`
-          errors.value[field] = message
+          ;(errors.value as any)[field] = message
           return false
         }
       }
@@ -191,16 +186,17 @@ export function useFormValidation<T extends Record<string, any>>(
       if (rule.custom) {
         const result = rule.custom(value, form)
         if (result !== true) {
-          errors.value[field] = typeof result === 'string' 
+          const message = typeof result === 'string' 
             ? result 
-            : `${String(field)} is invalid`
+            : `${String(field)} validation failed`
+          ;(errors.value as any)[field] = message
           return false
         }
       }
     }
 
     // Clear error if validation passes
-    delete errors.value[field]
+    delete (errors.value as any)[field]
     return true
   }
 
@@ -230,7 +226,7 @@ export function useFormValidation<T extends Record<string, any>>(
   }
 
   const clearFieldError = (field: keyof T) => {
-    delete errors.value[field]
+    delete (errors.value as any)[field]
   }
 
   const reset = () => {
@@ -241,13 +237,13 @@ export function useFormValidation<T extends Record<string, any>>(
   }
 
   const setFieldValue = (field: keyof T, value: any) => {
-    form[field] = value
+    (form as any)[field] = value
     if (touched.value.has(field)) {
       validateField(field)
     }
   }
 
-  const submit = async (handler: (form: T) => Promise<void>): Promise<void> => {
+  const submit = async (handler: (form: UnwrapRef<T>) => Promise<void>): Promise<void> => {
     isSubmitting.value = true
     
     try {
@@ -256,10 +252,10 @@ export function useFormValidation<T extends Record<string, any>>(
         throw new Error('Form validation failed')
       }
       
-      await handler(form)
+      await handler(form as UnwrapRef<T>)
       reset()
     } catch (error) {
-      console.error('Form submission error:', error)
+      logger.error('Form submission error:', error)
       throw error
     } finally {
       isSubmitting.value = false
@@ -267,8 +263,8 @@ export function useFormValidation<T extends Record<string, any>>(
   }
 
   return {
-    form,
-    errors,
+    form: form as UnwrapRef<T>,
+    errors: errors as Ref<Record<keyof T, string>>,
     isValid,
     isDirty,
     isSubmitting,

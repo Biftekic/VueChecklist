@@ -45,6 +45,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
@@ -91,7 +92,7 @@ onMounted(() => {
       checklistStore.resetCurrentChecklist && checklistStore.resetCurrentChecklist()
     }
   } catch (error) {
-    console.error('Error initializing CreateChecklistPage:', error)
+    logger.error('Error initializing CreateChecklistPage:', error)
     // Ensure we have a valid state even if initialization fails
     appStore.currentStep = 1
   }
@@ -123,7 +124,7 @@ const saveChecklist = async () => {
       router.push(`/checklist/${id}`)
     }
   } catch (error) {
-    console.error('Failed to save checklist:', error)
+    logger.error('Failed to save checklist:', error)
     appStore.showNotification('Failed to save checklist', 'error')
   }
 }

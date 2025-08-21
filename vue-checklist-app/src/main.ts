@@ -1,3 +1,4 @@
+import { logger } from "@/services/logger"
 import { createApp } from 'vue'
 import type { App as VueApp, ComponentPublicInstance } from 'vue'
 import { createPinia } from 'pinia'
@@ -19,7 +20,7 @@ const pinia = createPinia()
 // Production error handler
 app.config.errorHandler = (err: unknown, instance: ComponentPublicInstance | null, info: string) => {
   if (import.meta.env.DEV) {
-    console.error('[Vue Error]', {
+    logger.error('[Vue Error]', {
       error: err,
       component: instance?.$options.name || 'Unknown',
       info
@@ -30,7 +31,7 @@ app.config.errorHandler = (err: unknown, instance: ComponentPublicInstance | nul
 // Development warning handler
 if (import.meta.env.DEV) {
   app.config.warnHandler = (msg: string) => {
-    console.warn(`[Vue Warning]: ${msg}`)
+    logger.warn(`[Vue Warning]: ${msg}`)
   }
 }
 

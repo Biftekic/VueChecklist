@@ -293,6 +293,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted } from 'vue'
 import { useChecklistStore } from '@/stores/checklistStore'
 import { useAppStore } from '@/stores/app'
@@ -461,7 +462,7 @@ const generatePDF = () => {
       appStore.showNotification('PDF generated successfully!', 'success')
     })
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    logger.error('Error generating PDF:', error)
     appStore.showNotification('Failed to generate PDF', 'error')
   }
 }
@@ -480,36 +481,36 @@ const saveChecklist = async () => {
     // Set the checklist name
     checklistStore.updateChecklistName(checklistName.value)
     
-    console.log('Starting save process...')
-    console.log('Checklist name:', checklistName.value)
-    console.log('Save option:', saveOption.value)
-    console.log('Current checklist data:', checklist.value)
+    logger.debug('Starting save process...')
+    logger.debug('Checklist name:', checklistName.value)
+    logger.debug('Save option:', saveOption.value)
+    logger.debug('Current checklist data:', checklist.value)
     
     // Save based on option
     if (saveOption.value === 'checklist' || saveOption.value === 'both') {
-      console.log('Saving as checklist...')
+      logger.debug('Saving as checklist...')
       const checklistId = await checklistStore.saveChecklist()
-      console.log('Checklist saved with ID:', checklistId)
+      logger.debug('Checklist saved with ID:', checklistId)
     }
     
     if (saveOption.value === 'template' || saveOption.value === 'both') {
-      console.log('Saving as template...')
+      logger.debug('Saving as template...')
       const templateId = await checklistStore.saveAsTemplate(checklistName.value)
-      console.log('Template saved with ID:', templateId)
+      logger.debug('Template saved with ID:', templateId)
     }
     
     // Show success message
     appStore.showNotification('Checklist saved successfully!', 'success')
     
     // Navigate immediately after successful save
-    console.log('Navigating to checklists page...')
+    logger.debug('Navigating to checklists page...')
     await router.push('/checklists')
-    console.log('Navigation successful')
+    logger.debug('Navigation successful')
     
     // Reset saving state after navigation completes
     saving.value = false
   } catch (error) {
-    console.error('Error saving checklist:', error)
+    logger.error('Error saving checklist:', error)
     appStore.showNotification(`Error saving checklist: ${error.message || 'Unknown error'}`, 'error')
     saving.value = false
   }

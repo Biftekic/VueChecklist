@@ -1,4 +1,5 @@
 import Dexie, { Table } from 'dexie'
+import { logger } from '@/services/logger'
 import { runMigrations } from './db/migrations'
 
 // Interfaces
@@ -129,7 +130,7 @@ db.on('ready', async function() {
   try {
     await runMigrations(db)
   } catch (error) {
-    console.error('Failed to run migrations:', error)
+    logger.error('Failed to run migrations:', error)
   }
 })
 
@@ -292,8 +293,8 @@ class DatabaseService {
     return await db.clients
       .filter(client => 
         client.name.toLowerCase().includes(lowerQuery) ||
-        client.email?.toLowerCase().includes(lowerQuery) ||
-        client.phone?.includes(query)
+        (client.email?.toLowerCase().includes(lowerQuery) ?? false) ||
+        (client.phone?.includes(query) ?? false)
       )
       .toArray()
   }
@@ -414,7 +415,7 @@ class DatabaseService {
       
       return true
     } catch (error) {
-      console.error('Import error:', error)
+      logger.error('Import error:', error)
       throw new Error('Failed to import data: ' + (error as Error).message)
     }
   }

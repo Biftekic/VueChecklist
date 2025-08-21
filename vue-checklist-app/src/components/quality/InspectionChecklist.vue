@@ -397,6 +397,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, watch } from 'vue'
 import { useChecklistStore } from '@/stores/checklistStore'
 
@@ -838,12 +839,12 @@ const saveIssue = () => {
 
 const viewPhoto = (photo) => {
   // Implement photo viewer
-  console.log('View photo:', photo)
+  logger.debug('View photo:', photo)
 }
 
 const captureSignature = () => {
   // Implement signature capture
-  console.log('Capture signature')
+  logger.debug('Capture signature')
   // This would typically open a signature pad dialog
   signOff.value.signature = 'signature-captured'
 }
@@ -858,7 +859,7 @@ const saveInspection = () => {
   }
   
   // Save to store or database
-  console.log('Saving inspection:', inspectionData)
+  logger.debug('Saving inspection:', inspectionData)
   
   // Show success message
   dialog.value = false

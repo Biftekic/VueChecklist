@@ -1,3 +1,4 @@
+import { logger } from "@/services/logger"
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
@@ -60,7 +61,7 @@ export const useTemplatesStore = defineStore('templates', () => {
         templates.value.set(template.id, template)
       })
     } catch (error) {
-      console.error('Error loading templates:', error)
+      logger.error('Error loading templates:', error)
     } finally {
       isLoading.value = false
     }
@@ -82,7 +83,7 @@ export const useTemplatesStore = defineStore('templates', () => {
         return dbTemplate
       }
     } catch (error) {
-      console.error('Error selecting template:', error)
+      logger.error('Error selecting template:', error)
     }
     
     return null
@@ -97,7 +98,7 @@ export const useTemplatesStore = defineStore('templates', () => {
       }
       return true
     } catch (error) {
-      console.error('Error updating template:', error)
+      logger.error('Error updating template:', error)
       return false
     }
   }
@@ -109,7 +110,7 @@ export const useTemplatesStore = defineStore('templates', () => {
       templates.value.set(id, newTemplate)
       return id
     } catch (error) {
-      console.error('Error creating template:', error)
+      logger.error('Error creating template:', error)
       return null
     }
   }

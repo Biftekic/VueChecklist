@@ -3,14 +3,15 @@
  * Handles schema evolution and data transformation
  */
 
+import { logger } from "@/services/logger"
 import Dexie from 'dexie'
 
 export interface Migration {
   version: number
   name: string
   description: string
-  up: (db: Dexie, transaction: Dexie.Transaction) => Promise<void>
-  down?: (db: Dexie, transaction: Dexie.Transaction) => Promise<void>
+  up: (db: Dexie, transaction: any) => Promise<void>
+  down?: (db: Dexie, transaction: any) => Promise<void>
   timestamp: Date
 }
 
@@ -72,17 +73,17 @@ export class MigrationManager {
     const pendingMigrations = this.migrations.filter(m => m.version > currentVersion)
     
     if (pendingMigrations.length === 0) {
-      console.log('Database is up to date')
+      logger.debug('Database is up to date')
       return
     }
     
-    console.log(`Running ${pendingMigrations.length} migrations...`)
+    logger.debug(`Running ${pendingMigrations.length} migrations...`)
     
     for (const migration of pendingMigrations) {
       await this.runMigration(migration)
     }
     
-    console.log('All migrations completed successfully')
+    logger.debug('All migrations completed successfully')
   }
 
   /**
@@ -97,7 +98,7 @@ export class MigrationManager {
     }
     
     try {
-      console.log(`Running migration ${migration.version}: ${migration.name}`)
+      logger.debug(`Running migration ${migration.version}: ${migration.name}`)
       
       await this.database.transaction('rw', 
         this.database.tables, 
@@ -112,18 +113,18 @@ export class MigrationManager {
         }
       )
       
-      console.log(`✓ Migration ${migration.version} completed`)
+      logger.debug(`✓ Migration ${migration.version} completed`)
       this.currentVersion = migration.version
       
     } catch (error) {
       record.error = error instanceof Error ? error.message : String(error)
-      console.error(`✗ Migration ${migration.version} failed:`, error)
+      logger.error(`✗ Migration ${migration.version} failed:`, error)
       
       // Record failed migration
       try {
         await this.database.table('_migrations').add(record)
       } catch (e) {
-        console.error('Failed to record migration failure:', e)
+        logger.error('Failed to record migration failure:', e)
       }
       
       throw new Error(`Migration ${migration.version} failed: ${record.error}`)
@@ -149,7 +150,7 @@ export class MigrationManager {
         throw new Error(`Migration ${migration.version} does not support rollback`)
       }
       
-      console.log(`Rolling back migration ${migration.version}: ${migration.name}`)
+      logger.debug(`Rolling back migration ${migration.version}: ${migration.name}`)
       
       await this.database.transaction('rw',
         this.database.tables,
@@ -164,7 +165,7 @@ export class MigrationManager {
         }
       )
       
-      console.log(`✓ Rolled back migration ${migration.version}`)
+      logger.debug(`✓ Rolled back migration ${migration.version}`)
     }
   }
 
@@ -186,7 +187,7 @@ export class MigrationManager {
    * Reset database (dangerous!)
    */
   async reset(): Promise<void> {
-    console.warn('⚠️ Resetting database - all data will be lost!')
+    logger.warn('⚠️ Resetting database - all data will be lost!')
     
     // Delete all tables
     await this.database.delete()
@@ -211,7 +212,7 @@ const migrations: Migration[] = [
     timestamp: new Date('2024-01-01'),
     async up(db: Dexie) {
       // This migration is handled by Dexie's version system
-      console.log('Initial schema created')
+      logger.debug('Initial schema created')
     }
   },
   
@@ -305,7 +306,7 @@ const migrations: Migration[] = [
       // Check if table exists
       if (!db.tables.some(table => table.name === '_migrations')) {
         // This would be handled by Dexie versioning
-        console.log('Migrations table will be created')
+        logger.debug('Migrations table will be created')
       }
     }
   }
@@ -328,14 +329,14 @@ export async function runMigrations(database?: Dexie): Promise<void> {
     }
     
     if (!migrationManager) {
-      console.warn('Migration manager not initialized, skipping migrations')
+      logger.warn('Migration manager not initialized, skipping migrations')
       return
     }
     
-    console.log('Checking for database migrations...')
+    logger.debug('Checking for database migrations...')
     await migrationManager.migrate()
   } catch (error) {
-    console.error('Migration failed:', error)
+    logger.error('Migration failed:', error)
     throw error
   }
 }

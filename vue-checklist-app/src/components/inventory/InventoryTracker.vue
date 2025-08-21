@@ -683,6 +683,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted } from 'vue'
 import inventoryService from '@/services/inventoryService'
 import { useAppStore } from '@/stores/app'
@@ -826,7 +827,7 @@ const loadInventoryData = async () => {
                                monthlyCosts.value.reorders + 
                                monthlyCosts.value.maintenance
   } catch (error) {
-    console.error('Error loading inventory data:', error)
+    logger.error('Error loading inventory data:', error)
     appStore.showSnackbar('Failed to load inventory data', 'error')
   }
 }
@@ -895,7 +896,7 @@ const saveSupply = async () => {
     addSupplyDialog.value = false
     appStore.showSnackbar('Supply saved successfully', 'success')
   } catch (error) {
-    console.error('Error saving supply:', error)
+    logger.error('Error saving supply:', error)
     appStore.showSnackbar('Failed to save supply', 'error')
   }
 }
@@ -918,19 +919,19 @@ const confirmRestock = async () => {
     restockDialog.value = false
     appStore.showSnackbar('Supply restocked successfully', 'success')
   } catch (error) {
-    console.error('Error restocking supply:', error)
+    logger.error('Error restocking supply:', error)
     appStore.showSnackbar('Failed to restock supply', 'error')
   }
 }
 
 const viewUsageHistory = (supply) => {
   // Implement usage history view
-  console.log('View usage history for:', supply)
+  logger.debug('View usage history for:', supply)
 }
 
 const editEquipment = (equipment) => {
   // Implement equipment edit
-  console.log('Edit equipment:', equipment)
+  logger.debug('Edit equipment:', equipment)
 }
 
 const scheduleMaintenance = async (equipment) => {
@@ -939,7 +940,7 @@ const scheduleMaintenance = async (equipment) => {
     await loadInventoryData()
     appStore.showSnackbar('Maintenance scheduled', 'success')
   } catch (error) {
-    console.error('Error scheduling maintenance:', error)
+    logger.error('Error scheduling maintenance:', error)
     appStore.showSnackbar('Failed to schedule maintenance', 'error')
   }
 }
@@ -950,7 +951,7 @@ const completeMaintenance = async (alert) => {
     await loadInventoryData()
     appStore.showSnackbar('Maintenance completed', 'success')
   } catch (error) {
-    console.error('Error completing maintenance:', error)
+    logger.error('Error completing maintenance:', error)
     appStore.showSnackbar('Failed to complete maintenance', 'error')
   }
 }
@@ -965,7 +966,7 @@ const processReorder = async (alert) => {
     await loadInventoryData()
     appStore.showSnackbar('Reorder processed successfully', 'success')
   } catch (error) {
-    console.error('Error processing reorder:', error)
+    logger.error('Error processing reorder:', error)
     appStore.showSnackbar('Failed to process reorder', 'error')
   }
 }

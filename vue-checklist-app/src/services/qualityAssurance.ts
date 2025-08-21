@@ -723,7 +723,7 @@ class QualityAssuranceService {
 export const qualityAssuranceService = new QualityAssuranceService()
 
 // Export types and constants
-export { QUALITY_STANDARDS, GRADE_THRESHOLDS }
+export { GRADE_THRESHOLDS }
 
 // Export default
 export default qualityAssuranceService

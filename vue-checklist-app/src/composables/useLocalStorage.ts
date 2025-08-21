@@ -1,3 +1,4 @@
+import { logger } from "@/services/logger"
 import { ref, watch, type Ref, type UnwrapRef } from 'vue'
 
 export interface UseLocalStorageOptions {
@@ -14,7 +15,7 @@ export function useLocalStorage<T>(
   const {
     serializer = JSON.stringify,
     deserializer = JSON.parse,
-    onError = console.error
+    onError = logger.error
   } = options
 
   // Initialize the ref with the stored value or default

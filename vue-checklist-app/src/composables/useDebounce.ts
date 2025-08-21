@@ -4,7 +4,7 @@ export function useDebounce<T>(
   value: Ref<T> | T,
   delay: number = 300
 ): Ref<UnwrapRef<T>> {
-  const debouncedValue = ref<T>(value)
+  const debouncedValue = ref<T>((value && typeof value === 'object' && 'value' in value) ? (value as Ref<T>).value : value)
   let timeoutId: NodeJS.Timeout | null = null
 
   const updateValue = (newValue: T) => {

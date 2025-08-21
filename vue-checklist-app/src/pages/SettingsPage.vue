@@ -201,6 +201,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
@@ -233,38 +234,38 @@ const timeUnits = ['minutes', 'hours']
 
 // Methods
 const saveProfile = () => {
-  console.log('Saving profile:', profile.value)
+  logger.debug('Saving profile:', profile.value)
   // Save to storage
   alert('Profile saved successfully!')
 }
 
 const savePreferences = () => {
-  console.log('Saving preferences:', preferences.value)
+  logger.debug('Saving preferences:', preferences.value)
   // Save to storage
   alert('Preferences saved successfully!')
 }
 
 const saveChecklistDefaults = () => {
-  console.log('Saving checklist defaults:', checklistDefaults.value)
+  logger.debug('Saving checklist defaults:', checklistDefaults.value)
   // Save to storage
   alert('Defaults saved successfully!')
 }
 
 const exportData = () => {
-  console.log('Exporting data...')
+  logger.debug('Exporting data...')
   // Export logic
   alert('Data exported successfully!')
 }
 
 const importData = () => {
-  console.log('Importing data...')
+  logger.debug('Importing data...')
   // Import logic
   alert('Import feature coming soon!')
 }
 
 const clearData = () => {
   if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-    console.log('Clearing all data...')
+    logger.debug('Clearing all data...')
     // Clear logic
     alert('All data cleared!')
   }
@@ -276,7 +277,7 @@ const openLink = (type) => {
     privacy: '#',
     terms: '#'
   }
-  console.log(`Opening ${type} link:`, links[type])
+  logger.debug(`Opening ${type} link:`, links[type])
 }
 </script>
 

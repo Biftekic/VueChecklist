@@ -289,6 +289,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useChecklistStore } from '@/stores/checklistStore'
@@ -439,7 +440,7 @@ const loadChecklist = async () => {
     }
     
   } catch (err) {
-    console.error('Error loading checklist:', err)
+    logger.error('Error loading checklist:', err)
     error.value = 'Failed to load checklist'
   } finally {
     loading.value = false
@@ -483,7 +484,7 @@ const saveChanges = async () => {
     router.push(`/checklist/${checklist.value.id}`)
     
   } catch (err) {
-    console.error('Error saving checklist:', err)
+    logger.error('Error saving checklist:', err)
     appStore.showSnackbar('Failed to save changes', 'error')
   } finally {
     saving.value = false

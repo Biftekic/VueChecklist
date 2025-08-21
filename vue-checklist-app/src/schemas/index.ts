@@ -90,7 +90,7 @@ export function createApiResponse<T>(data?: T, error?: ApiError): ApiResponse<T>
 }
 
 export function handleValidationError(error: z.ZodError): ApiError {
-  const issues = error.errors.map(e => ({
+  const issues = error.issues.map(e => ({
     path: e.path.join('.'),
     message: e.message
   }))

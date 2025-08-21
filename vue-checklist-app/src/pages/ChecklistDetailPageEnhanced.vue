@@ -333,6 +333,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useChecklistStore } from '@/stores/checklistStore'
@@ -439,7 +440,7 @@ const loadChecklist = async () => {
       }
     }
   } catch (err) {
-    console.error('Error loading checklist:', err)
+    logger.error('Error loading checklist:', err)
     error.value = 'Failed to load checklist'
   } finally {
     loading.value = false
@@ -459,7 +460,7 @@ const exportPDF = () => {
     pdf.save(filename)
     appStore.showSnackbar('PDF exported successfully', 'success')
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    logger.error('Error generating PDF:', error)
     appStore.showSnackbar('Failed to generate PDF', 'error')
   }
 }
@@ -473,7 +474,7 @@ const shareChecklist = async () => {
         url: window.location.href
       })
     } catch (err) {
-      console.log('Share cancelled or failed:', err)
+      logger.debug('Share cancelled or failed:', err)
     }
   } else {
     // Fallback: copy link to clipboard
@@ -492,7 +493,7 @@ const confirmDelete = async () => {
     appStore.showSnackbar('Checklist deleted successfully', 'success')
     router.push('/checklists')
   } catch (error) {
-    console.error('Error deleting checklist:', error)
+    logger.error('Error deleting checklist:', error)
     appStore.showSnackbar('Failed to delete checklist', 'error')
   }
   deleteDialog.value = false

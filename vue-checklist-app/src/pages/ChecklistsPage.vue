@@ -133,6 +133,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -182,15 +183,15 @@ const loadChecklists = async () => {
     // Load actual checklists from database via store
     await checklistStore.loadChecklists()
     checklists.value = checklistStore.checklists || []
-    console.log('Loaded checklists:', checklists.value)
+    logger.debug('Loaded checklists:', checklists.value)
     // Debug: Log the first checklist if it exists
     if (checklists.value.length > 0) {
-      console.log('First checklist details:', checklists.value[0])
-      console.log('First checklist ID:', checklists.value[0].id)
-      console.log('ID type:', typeof checklists.value[0].id)
+      logger.debug('First checklist details:', checklists.value[0])
+      logger.debug('First checklist ID:', checklists.value[0].id)
+      logger.debug('ID type:', typeof checklists.value[0].id)
     }
   } catch (error) {
-    console.error('Error loading checklists:', error)
+    logger.error('Error loading checklists:', error)
     checklists.value = []
   } finally {
     isLoading.value = false
@@ -202,27 +203,27 @@ const navigateTo = (path) => {
 }
 
 const viewChecklist = (id) => {
-  console.log('=== viewChecklist called ===')
-  console.log('Checklist ID:', id)
-  console.log('ID type:', typeof id)
-  console.log('Router instance:', router)
+  logger.debug('=== viewChecklist called ===')
+  logger.debug('Checklist ID:', id)
+  logger.debug('ID type:', typeof id)
+  logger.debug('Router instance:', router)
   
   if (!id && id !== 0) {
-    console.error('No ID provided for checklist')
+    logger.error('No ID provided for checklist')
     return
   }
   
   const path = `/checklist/${id}`
-  console.log('Navigating to:', path)
+  logger.debug('Navigating to:', path)
   
   try {
     router.push(path).then(() => {
-      console.log('Navigation successful')
+      logger.debug('Navigation successful')
     }).catch((err) => {
-      console.error('Navigation failed:', err)
+      logger.error('Navigation failed:', err)
     })
   } catch (error) {
-    console.error('Error during navigation:', error)
+    logger.error('Error during navigation:', error)
   }
 }
 
@@ -234,7 +235,7 @@ const deleteChecklist = async (id) => {
       // Refresh the list after deletion
       await loadChecklists()
     } catch (error) {
-      console.error('Error deleting checklist:', error)
+      logger.error('Error deleting checklist:', error)
       // Show error notification if needed
       alert('Failed to delete checklist. Please try again.')
     } finally {

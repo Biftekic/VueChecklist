@@ -16,7 +16,7 @@ import {
 import {
   validateClient,
   safeValidateClient,
-  type Client
+  type ClientInfo
 } from '@/schemas/client.schema'
 
 import {
@@ -31,8 +31,7 @@ import {
   type Room
 } from '@/schemas/room.schema'
 
-import { dbOperations } from '@/services/database'
-import { useErrorHandling } from '@/composables/useErrorHandling'
+import { databaseService } from '@/services/database'
 
 class ValidationError extends Error {
   constructor(

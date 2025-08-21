@@ -73,6 +73,7 @@
 </template>
 
 <script setup lang="ts">
+import { logger } from "@/services/logger"
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
@@ -135,7 +136,7 @@ const handleNavigation = (path: string): void => {
   try {
     router.push(path)
   } catch (error) {
-    console.error('Navigation error:', error)
+    logger.error('Navigation error:', error)
   }
 }
 

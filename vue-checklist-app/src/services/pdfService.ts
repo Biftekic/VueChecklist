@@ -1,4 +1,5 @@
 // PDF Generation Service
+import { logger } from "@/services/logger"
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 
@@ -575,7 +576,7 @@ class PDFService {
 
       return response.ok
     } catch (error) {
-      console.error('Error sending email:', error)
+      logger.error('Error sending email:', error)
       return false
     }
   }

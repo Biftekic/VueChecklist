@@ -379,6 +379,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed, onMounted, watch } from 'vue'
 import { taskTemplateService } from '@/services/taskTemplateService'
 import CustomTaskModal from './CustomTaskModal.vue'
@@ -409,7 +410,7 @@ const loadTemplates = async () => {
   try {
     templates.value = await taskTemplateService.getAllTemplates()
   } catch (error) {
-    console.error('Failed to load templates:', error)
+    logger.error('Failed to load templates:', error)
   } finally {
     loading.value = false
   }
@@ -520,7 +521,7 @@ const handleTemplateSave = async (templateData) => {
     await loadTemplates()
     editDialog.value = false
   } catch (error) {
-    console.error('Failed to save template:', error)
+    logger.error('Failed to save template:', error)
   }
 }
 
@@ -536,7 +537,7 @@ const addTemplateToChecklist = async (template) => {
     detailsDialog.value = false
     emit('update:modelValue', false)
   } catch (error) {
-    console.error('Failed to add template to checklist:', error)
+    logger.error('Failed to add template to checklist:', error)
   }
 }
 
@@ -555,7 +556,7 @@ const addSelectedToChecklist = async () => {
     selectedTemplates.value = []
     emit('update:modelValue', false)
   } catch (error) {
-    console.error('Failed to add templates to checklist:', error)
+    logger.error('Failed to add templates to checklist:', error)
   }
 }
 

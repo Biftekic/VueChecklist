@@ -153,6 +153,7 @@
 </template>
 
 <script setup>
+import { logger } from "@/services/logger"
 import { ref, computed } from 'vue'
 import MainLayout from '@/layouts/MainLayout.vue'
 
@@ -261,13 +262,13 @@ const decreaseQuantity = (item) => {
 }
 
 const addItem = () => {
-  console.log('Add new item')
+  logger.debug('Add new item')
   // Open dialog to add new item
   alert('Add item feature coming soon!')
 }
 
 const editItem = (item) => {
-  console.log('Edit item:', item)
+  logger.debug('Edit item:', item)
   // Open dialog to edit item
   alert('Edit feature coming soon!')
 }
