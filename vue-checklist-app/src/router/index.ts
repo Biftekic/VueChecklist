@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/pages/EditChecklistPage.vue')
   },
   {
+    path: '/template/:id/edit',
+    name: 'template-edit',
+    component: () => import('@/pages/EditTemplatePage.vue')
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/pages/SettingsPage.vue')
