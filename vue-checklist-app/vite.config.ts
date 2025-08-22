@@ -156,6 +156,6 @@ export default defineConfig({
     // Reports
     reportCompressedSize: false,
     // Increase chunk size limit to reduce warnings
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 500
   }
 } as UserConfig)

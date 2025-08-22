@@ -1,5 +1,5 @@
 import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css' // Import MDI font CSS
+import '@mdi/font/css/materialdesignicons.min.css' // Import minified MDI font CSS
 import { createVuetify, ThemeDefinition } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'

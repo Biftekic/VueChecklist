@@ -186,9 +186,10 @@ export function sanitizeFormData<T extends Record<string, unknown>>(
       }
     } else if (typeof value === 'number') {
       sanitized[key as keyof T] = sanitizeNumber(value) as T[keyof T]
-    } else if (typeof value === 'object') {
-      // Recursively sanitize nested objects
-      sanitized[key as keyof T] = sanitizeFormData(value, options) as T[keyof T]
+    } else if (typeof value === 'object' && !Array.isArray(value)) {
+      // Recursively sanitize nested objects - cast to any to avoid type constraint issues
+      const nestedResult = sanitizeFormData(value as any, options)
+      sanitized[key as keyof T] = nestedResult as T[keyof T]
     } else {
       sanitized[key as keyof T] = value
     }

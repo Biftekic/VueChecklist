@@ -345,8 +345,7 @@ export const useChecklistStore = defineStore('checklist', () => {
         updatedAt: record.updatedAt ? new Date(record.updatedAt) : undefined,
         status: (record.status as 'active' | 'completed' | 'archived') || 'active',
         clientName: record.clientName,
-        frequency: record.frequency,
-        qualityScore: record.qualityScore
+        frequency: record.frequency
       }))
       logger.debug('Store checklists after load:', checklists.value)
     } catch (error) {
@@ -391,8 +390,7 @@ export const useChecklistStore = defineStore('checklist', () => {
           updatedAt: record.updatedAt ? new Date(record.updatedAt) : undefined,
           status: (record.status as 'active' | 'completed' | 'archived') || 'active',
           clientName: record.clientName,
-          frequency: record.frequency,
-          qualityScore: record.qualityScore
+          frequency: record.frequency
         }
         return checklist
       }
@@ -427,6 +425,48 @@ export const useChecklistStore = defineStore('checklist', () => {
       }
     } catch (error) {
       logger.error('Error updating task status:', error)
+      throw error
+    }
+  }
+  
+  const updateChecklist = async (checklistId: string, updates: Partial<Checklist>) => {
+    try {
+      // Get the existing checklist
+      const existing = checklists.value.find(c => c.id === checklistId)
+      if (!existing) {
+        throw new Error('Checklist not found')
+      }
+      
+      // Merge updates with existing data
+      const updatedChecklist = {
+        ...existing,
+        ...updates,
+        updatedAt: new Date()
+      }
+      
+      // Convert null to undefined for database compatibility
+      const dbChecklist: any = {
+        ...updatedChecklist,
+        name: updatedChecklist.name || undefined,
+        industry: updatedChecklist.industry || undefined,
+        propertySize: updatedChecklist.propertySize || undefined,
+        numberOfFloors: updatedChecklist.numberOfFloors || undefined,
+        clientInfo: updatedChecklist.clientInfo || undefined
+      }
+      
+      // Save to database
+      await databaseService.saveChecklist(dbChecklist)
+      
+      // Update local state
+      const index = checklists.value.findIndex(c => c.id === checklistId)
+      if (index !== -1) {
+        checklists.value[index] = updatedChecklist
+      }
+      
+      // Reload checklists to ensure consistency
+      await loadChecklists()
+    } catch (error) {
+      logger.error('Error updating checklist:', error)
       throw error
     }
   }
@@ -477,6 +517,7 @@ export const useChecklistStore = defineStore('checklist', () => {
     loadChecklist,
     deleteChecklist,
     updateTaskStatus,
+    updateChecklist,
     resetCurrentChecklist
   }
 })

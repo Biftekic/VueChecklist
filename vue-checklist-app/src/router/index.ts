@@ -24,17 +24,17 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/checklist/:id',
     name: 'checklist-detail',
-    component: () => import(/* webpackChunkName: "checklist-detail" */ '@/pages/ChecklistDetailPageEnhanced.vue')
+    component: () => import(/* webpackChunkName: "checklist-detail" */ '@/pages/ChecklistDetailPageRefactored.vue')
   },
   {
     path: '/checklist/:id/edit',
     name: 'checklist-edit',
-    component: () => import(/* webpackChunkName: "checklist-edit" */ '@/pages/EditChecklistPage.vue')
+    component: () => import(/* webpackChunkName: "checklist-edit" */ '@/pages/EditChecklistPageRefactored.vue')
   },
   {
     path: '/template/:id/edit',
     name: 'template-edit',
-    component: () => import(/* webpackChunkName: "template-edit" */ '@/pages/EditTemplatePage.vue')
+    component: () => import(/* webpackChunkName: "template-edit" */ '@/pages/EditTemplatePageRefactored.vue')
   },
   {
     path: '/settings',

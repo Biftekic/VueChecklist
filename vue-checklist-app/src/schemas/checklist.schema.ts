@@ -1,124 +1,111 @@
 import { z } from 'zod'
-import { ClientSchema } from './client.schema'
-import { TaskSchema } from './task.schema'
-import { RoomSchema } from './room.schema'
 
-// Time range schema
-export const TimeRangeSchema = z.object({
-  min: z.number().min(0),
-  max: z.number().min(0)
-}).refine(data => data.max >= data.min, {
-  message: "Maximum time must be greater than or equal to minimum time"
+// Client Info Schema
+export const clientInfoSchema = z.object({
+  name: z.string().min(1, 'Client name is required').max(100, 'Name too long'),
+  email: z.string().email('Invalid email address').optional().or(z.literal('')),
+  phone: z.string()
+    .regex(/^[\d\s\-\+\(\)]+$/, 'Invalid phone number')
+    .min(10, 'Phone number too short')
+    .max(20, 'Phone number too long')
+    .optional()
+    .or(z.literal('')),
+  address: z.string().max(200, 'Address too long').optional().or(z.literal('')),
+  notes: z.string().max(500, 'Notes too long').optional().or(z.literal('')),
+  frequency: z.string().optional()
 })
 
-// Property details schema
-export const PropertyDetailsSchema = z.object({
-  size: z.union([z.string(), z.number()]),
-  floors: z.union([z.string(), z.number()]),
-  rooms: z.union([z.string(), z.number()]),
-  type: z.enum([
-    'apartment',
-    'house',
-    'office',
-    'commercial',
-    'industrial',
-    'retail',
-    'other'
-  ]).optional(),
-  features: z.array(z.string()).optional()
+// Task Schema
+export const taskSchema = z.object({
+  id: z.string(),
+  roomId: z.string().optional(),
+  name: z.string().min(1, 'Task name is required').max(200, 'Task name too long'),
+  description: z.string().max(500, 'Description too long').optional(),
+  estimatedTime: z.number().min(1, 'Time must be at least 1 minute').max(480, 'Time too long').optional(),
+  adjustedTime: z.number().min(1).max(480).optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
+  completed: z.boolean().default(false),
+  category: z.string().optional(),
+  subtasks: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    completed: z.boolean()
+  })).optional(),
+  supplies: z.array(z.string()).optional(),
+  standards: z.object({
+    description: z.string().optional(),
+    checkItems: z.array(z.string()).optional(),
+    standards: z.array(z.string()).optional()
+  }).optional()
 })
 
-// Checklist modifiers schema
-export const ChecklistModifiersSchema = z.object({
-  difficulty: z.enum(['easy', 'average', 'difficult', 'very_difficult']),
-  expectations: z.enum(['low', 'average', 'high', 'very_high']),
-  challenges: z.enum(['none', 'average', 'challenging', 'very_challenging'])
+// Room Schema
+export const roomSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, 'Room name is required').max(100, 'Room name too long'),
+  category: z.string().optional(),
+  floor: z.number().optional(),
+  selected: z.boolean().optional()
 })
 
-// Main checklist schema
-export const ChecklistSchema = z.object({
-  id: z.string().uuid(),
-  templateId: z.string().nullable(),
-  name: z.string().min(1, "Checklist name is required").max(255),
-  client: ClientSchema,
-  tasks: z.array(TaskSchema),
-  rooms: z.array(RoomSchema),
-  status: z.enum([
-    'draft',
-    'scheduled',
-    'in_progress',
-    'completed',
-    'cancelled',
-    'paused'
-  ]),
-  propertyDetails: PropertyDetailsSchema,
-  modifiers: ChecklistModifiersSchema,
-  totalTime: TimeRangeSchema,
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  completedAt: z.date().optional(),
-  completedBy: z.string().optional(),
-  notes: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  version: z.number().optional()
+// Checklist Schema
+export const checklistSchema = z.object({
+  name: z.string()
+    .min(1, 'Checklist name is required')
+    .max(100, 'Checklist name too long')
+    .nullable()
+    .transform(val => val || null),
+  
+  industry: z.string()
+    .min(1, 'Industry is required')
+    .max(50, 'Industry name too long')
+    .nullable(),
+  
+  propertySize: z.number()
+    .min(100, 'Property size must be at least 100 sq ft')
+    .max(100000, 'Property size too large')
+    .nullable(),
+  
+  numberOfFloors: z.number()
+    .min(1, 'Must have at least 1 floor')
+    .max(100, 'Too many floors')
+    .nullable(),
+  
+  difficulty: z.enum(['Light', 'Average', 'Heavy']),
+  
+  expectations: z.enum(['Very Reasonable', 'Reasonable', 'Demanding', 'Very Demanding']),
+  
+  challenges: z.enum(['Very Easy', 'Easy', 'Moderate', 'Hard', 'Very Hard']),
+  
+  selectedRooms: z.array(roomSchema).default([]),
+  
+  selectedTasks: z.array(taskSchema).default([]),
+  
+  clientInfo: clientInfoSchema.nullable(),
+  
+  frequency: z.string().optional(),
+  
+  estimatedDuration: z.number()
+    .min(15, 'Duration must be at least 15 minutes')
+    .max(960, 'Duration too long')
+    .optional()
 })
 
-// Create checklist DTO schema
-export const CreateChecklistDTOSchema = z.object({
-  templateId: z.string().optional(),
-  name: z.string().min(1).max(255),
-  client: ClientSchema,
-  propertyDetails: PropertyDetailsSchema,
-  rooms: z.array(RoomSchema),
-  modifiers: ChecklistModifiersSchema.partial().optional()
+// Create Checklist Form Schema (for initial creation)
+export const createChecklistSchema = checklistSchema.extend({
+  name: z.string().min(1, 'Checklist name is required').max(100, 'Checklist name too long'),
+  industry: z.string().min(1, 'Industry is required').max(50, 'Industry name too long'),
+  propertySize: z.number().min(100, 'Property size must be at least 100 sq ft').max(100000, 'Property size too large'),
+  numberOfFloors: z.number().min(1, 'Must have at least 1 floor').max(100, 'Too many floors')
 })
 
-// Update checklist DTO schema
-export const UpdateChecklistDTOSchema = z.object({
-  name: z.string().min(1).max(255).optional(),
-  client: ClientSchema.partial().optional(),
-  status: z.enum([
-    'draft',
-    'scheduled',
-    'in_progress',
-    'completed',
-    'cancelled',
-    'paused'
-  ]).optional(),
-  notes: z.string().optional(),
-  tags: z.array(z.string()).optional()
-})
+// Edit Checklist Form Schema (for editing existing checklists)
+export const editChecklistSchema = checklistSchema.partial()
 
 // Type exports
-export type Checklist = z.infer<typeof ChecklistSchema>
-export type CreateChecklistDTO = z.infer<typeof CreateChecklistDTOSchema>
-export type UpdateChecklistDTO = z.infer<typeof UpdateChecklistDTOSchema>
-export type PropertyDetails = z.infer<typeof PropertyDetailsSchema>
-export type ChecklistModifiers = z.infer<typeof ChecklistModifiersSchema>
-export type TimeRange = z.infer<typeof TimeRangeSchema>
-
-// Validation helper functions
-export function validateChecklist(data: unknown): Checklist {
-  return ChecklistSchema.parse(data)
-}
-
-export function validateCreateChecklist(data: unknown): CreateChecklistDTO {
-  return CreateChecklistDTOSchema.parse(data)
-}
-
-export function validateUpdateChecklist(data: unknown): UpdateChecklistDTO {
-  return UpdateChecklistDTOSchema.parse(data)
-}
-
-// Safe validation (returns result with success flag)
-export function safeValidateChecklist(data: unknown) {
-  return ChecklistSchema.safeParse(data)
-}
-
-export function safeValidateCreateChecklist(data: unknown) {
-  return CreateChecklistDTOSchema.safeParse(data)
-}
-
-export function safeValidateUpdateChecklist(data: unknown) {
-  return UpdateChecklistDTOSchema.safeParse(data)
-}
+export type ClientInfo = z.infer<typeof clientInfoSchema>
+export type Task = z.infer<typeof taskSchema>
+export type Room = z.infer<typeof roomSchema>
+export type Checklist = z.infer<typeof checklistSchema>
+export type CreateChecklist = z.infer<typeof createChecklistSchema>
+export type EditChecklist = z.infer<typeof editChecklistSchema>

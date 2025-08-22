@@ -60,8 +60,8 @@ export function useErrorHandler() {
     errors.value.push(errorState)
 
     // Show notification for user-facing errors
-    if (context) {
-      showErrorNotification(errorState.message, context || 'Error')
+    if (context && errorState.message) {
+      showErrorNotification(errorState.message, context)
     }
 
     // Handle specific error codes
@@ -223,9 +223,9 @@ export function useErrorHandler() {
   /**
    * Retry last failed operation
    */
-  let retryCallback: (() => Promise<void>) | null = null
+  let retryCallback: (() => Promise<any>) | null = null
 
-  function setRetryCallback(callback: () => Promise<void>): void {
+  function setRetryCallback(callback: () => Promise<any>): void {
     retryCallback = callback
   }
 
@@ -305,8 +305,8 @@ export function useErrorHandler() {
   /**
    * Form validation error handling
    */
-  function handleValidationErrors(errors: Record<string, string>): void {
-    Object.entries(errors).forEach(([field, message]) => {
+  function handleValidationErrors(validationErrors: Record<string, string>): void {
+    Object.entries(validationErrors).forEach(([field, message]) => {
       const errorState: ErrorState = {
         hasError: true,
         message,
@@ -314,7 +314,7 @@ export function useErrorHandler() {
         code: 'VALIDATION_ERROR',
         timestamp: new Date()
       }
-      this.errors.value.push(errorState)
+      errors.value.push(errorState)
     })
   }
 
