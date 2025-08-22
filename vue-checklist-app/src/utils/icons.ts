@@ -32,6 +32,7 @@ import {
   mdiClock,
   mdiAccount,
   mdiAccountGroup,
+  mdiAccountPlus,
   mdiMapMarker,
   mdiPhone,
   mdiEmail,
@@ -111,7 +112,30 @@ import {
   mdiMessage,
   mdiMessageOutline,
   mdiComment,
-  mdiCommentOutline
+  mdiCommentOutline,
+  mdiSpeedometer,
+  mdiHandBackRight,
+  mdiRobot,
+  mdiScaleBalance,
+  mdiBottleTonic,
+  mdiTools,
+  mdiWrench,
+  mdiWrenchClock,
+  mdiCurrencyUsd,
+  mdiCalendarAlert,
+  mdiClockAlert,
+  mdiCheckboxMarked,
+  mdiCheckboxBlankOutline,
+  mdiCircle,
+  mdiRadioboxMarked,
+  mdiRadioboxBlank,
+  mdiStarHalfFull,
+  mdiCached,
+  mdiPageFirst,
+  mdiPageLast,
+  mdiUnfoldMoreHorizontal,
+  mdiFile,
+  mdiMinus
 } from '@mdi/js'
 
 // Export as an object for easy access
@@ -170,6 +194,7 @@ export const icons = {
   // User & Accounts
   account: mdiAccount,
   accountGroup: mdiAccountGroup,
+  accountPlus: mdiAccountPlus,
   
   // Communication
   phone: mdiPhone,
@@ -259,7 +284,32 @@ export const icons = {
   bookmark: mdiBookmark,
   bookmarkOutline: mdiBookmarkOutline,
   flag: mdiFlag,
-  flagOutline: mdiFlagOutline
+  flagOutline: mdiFlagOutline,
+  
+  // Additional Icons
+  speedometer: mdiSpeedometer,
+  handBackRight: mdiHandBackRight,
+  robot: mdiRobot,
+  scaleBalance: mdiScaleBalance,
+  bottleTonic: mdiBottleTonic,
+  tools: mdiTools,
+  wrench: mdiWrench,
+  wrenchClock: mdiWrenchClock,
+  currencyUsd: mdiCurrencyUsd,
+  calendarAlert: mdiCalendarAlert,
+  clockAlert: mdiClockAlert,
+  checkboxMarked: mdiCheckboxMarked,
+  checkboxBlankOutline: mdiCheckboxBlankOutline,
+  circle: mdiCircle,
+  radioboxMarked: mdiRadioboxMarked,
+  radioboxBlank: mdiRadioboxBlank,
+  starHalfFull: mdiStarHalfFull,
+  cached: mdiCached,
+  pageFirst: mdiPageFirst,
+  pageLast: mdiPageLast,
+  unfoldMoreHorizontal: mdiUnfoldMoreHorizontal,
+  file: mdiFile,
+  minus: mdiMinus
 }
 
 // Type for icon keys
