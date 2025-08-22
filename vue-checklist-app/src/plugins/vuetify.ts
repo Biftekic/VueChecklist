@@ -1,9 +1,8 @@
 import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.css' // Ensure MDI CSS is loaded
 import { createVuetify, ThemeDefinition } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-import { mdi } from 'vuetify/iconsets/mdi-svg'
-import * as mdiIcons from '@mdi/js'
 
 // Define custom theme colors based on our design system
 const lightTheme: ThemeDefinition = {
@@ -68,53 +67,15 @@ const darkTheme: ThemeDefinition = {
   }
 }
 
-// Create custom aliases mapping for commonly used icons
-const customAliases = {
-  // Add custom aliases here if needed
-  complete: mdiIcons.mdiCheck,
-  cancel: mdiIcons.mdiClose,
-  close: mdiIcons.mdiClose,
-  delete: mdiIcons.mdiDelete,
-  clear: mdiIcons.mdiClose,
-  success: mdiIcons.mdiCheckCircle,
-  info: mdiIcons.mdiInformation,
-  warning: mdiIcons.mdiAlert,
-  error: mdiIcons.mdiAlertCircle,
-  prev: mdiIcons.mdiChevronLeft,
-  next: mdiIcons.mdiChevronRight,
-  checkboxOn: mdiIcons.mdiCheckboxMarked,
-  checkboxOff: mdiIcons.mdiCheckboxBlankOutline,
-  delimiter: mdiIcons.mdiCircle,
-  sort: mdiIcons.mdiSort,
-  expand: mdiIcons.mdiChevronDown,
-  menu: mdiIcons.mdiMenu,
-  subgroup: mdiIcons.mdiMenuDown,
-  dropdown: mdiIcons.mdiMenuDown,
-  radioOn: mdiIcons.mdiRadioboxMarked,
-  radioOff: mdiIcons.mdiRadioboxBlank,
-  edit: mdiIcons.mdiPencil,
-  ratingEmpty: mdiIcons.mdiStarOutline,
-  ratingFull: mdiIcons.mdiStar,
-  ratingHalf: mdiIcons.mdiStarHalfFull,
-  loading: mdiIcons.mdiCached,
-  first: mdiIcons.mdiPageFirst,
-  last: mdiIcons.mdiPageLast,
-  unfold: mdiIcons.mdiUnfoldMoreHorizontal,
-  file: mdiIcons.mdiFile,
-  plus: mdiIcons.mdiPlus,
-  minus: mdiIcons.mdiMinus,
-  calendar: mdiIcons.mdiCalendar,
-  clock: mdiIcons.mdiClock
-}
-
 export default createVuetify({
   components,
   directives,
   icons: {
     defaultSet: 'mdi',
-    aliases: customAliases,
     sets: {
-      mdi
+      mdi: {
+        component: components.VIcon,
+      },
     }
   },
   theme: {
