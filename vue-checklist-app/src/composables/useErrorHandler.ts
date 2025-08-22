@@ -61,7 +61,7 @@ export function useErrorHandler() {
 
     // Show notification for user-facing errors
     if (context) {
-      showErrorNotification(errorState.message, context)
+      showErrorNotification(errorState.message, context || 'Error')
     }
 
     // Handle specific error codes

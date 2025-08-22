@@ -77,13 +77,10 @@ export function useGlobalKeyboardShortcuts() {
       ctrl: true,
       description: 'Show keyboard shortcuts',
       action: () => {
-        notificationStore.addNotification({
-          type: 'info',
-          title: 'Keyboard Shortcuts',
-          message: globalShortcuts.map(s => 
-            `${s.ctrl ? 'Ctrl+' : ''}${s.alt ? 'Alt+' : ''}${s.shift ? 'Shift+' : ''}${s.key.toUpperCase()}: ${s.description}`
-          ).join('\n')
-        })
+        const message = globalShortcuts.map(s => 
+          `${s.ctrl ? 'Ctrl+' : ''}${s.alt ? 'Alt+' : ''}${s.shift ? 'Shift+' : ''}${s.key.toUpperCase()}: ${s.description}`
+        ).join('\n')
+        notificationStore.showInfo(message, 10000) // Show for 10 seconds
       }
     }
   ]

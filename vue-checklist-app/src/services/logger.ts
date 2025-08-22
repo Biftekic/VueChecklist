@@ -3,7 +3,7 @@
  * Centralized logging with environment-aware output
  */
 
-type LogArgument = string | number | boolean | object | Error | null | undefined
+type LogArgument = string | number | boolean | object | Error | null | undefined | unknown
 
 interface LogLevel {
   debug: (...args: LogArgument[]) => void
