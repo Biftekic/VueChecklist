@@ -45,6 +45,11 @@ const routes: RouteRecordRaw[] = [
     path: '/inventory',
     name: 'inventory',
     component: () => import(/* webpackChunkName: "inventory" */ '@/pages/InventoryPage.vue')
+  },
+  {
+    path: '/test-icons',
+    name: 'test-icons',
+    component: () => import(/* webpackChunkName: "test-icons" */ '@/components/TestIcons.vue')
   }
 ]
 

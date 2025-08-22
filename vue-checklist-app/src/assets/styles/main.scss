@@ -5,6 +5,11 @@
 $mobile-breakpoint: 600px;
 $tablet-breakpoint: 960px;
 
+// Ensure MDI icons display correctly
+.v-icon {
+  font-family: 'Material Design Icons' !important;
+}
+
 // Smooth scrolling and font rendering
 html {
   -webkit-font-smoothing: antialiased;

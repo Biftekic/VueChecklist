@@ -1,8 +1,9 @@
 import 'vuetify/styles'
-import '@mdi/font/css/materialdesignicons.css' // Ensure MDI CSS is loaded
+import '@mdi/font/css/materialdesignicons.css' // Import MDI font CSS
 import { createVuetify, ThemeDefinition } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
+import { aliases, mdi } from 'vuetify/iconsets/mdi' // Use mdi font iconset
 
 // Define custom theme colors based on our design system
 const lightTheme: ThemeDefinition = {
@@ -72,10 +73,9 @@ export default createVuetify({
   directives,
   icons: {
     defaultSet: 'mdi',
+    aliases,
     sets: {
-      mdi: {
-        component: components.VIcon,
-      },
+      mdi,
     }
   },
   theme: {
