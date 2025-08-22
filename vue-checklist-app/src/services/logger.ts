@@ -3,35 +3,37 @@
  * Centralized logging with environment-aware output
  */
 
+type LogArgument = string | number | boolean | object | Error | null | undefined
+
 interface LogLevel {
-  debug: (...args: any[]) => void
-  info: (...args: any[]) => void
-  warn: (...args: any[]) => void
-  error: (...args: any[]) => void
+  debug: (...args: LogArgument[]) => void
+  info: (...args: LogArgument[]) => void
+  warn: (...args: LogArgument[]) => void
+  error: (...args: LogArgument[]) => void
 }
 
 class Logger implements LogLevel {
   private isDevelopment = import.meta.env.DEV
   private isProduction = import.meta.env.PROD
 
-  debug(...args: any[]): void {
+  debug(...args: LogArgument[]): void {
     if (this.isDevelopment) {
       console.log('[DEBUG]', ...args)
     }
   }
 
-  info(...args: any[]): void {
+  info(...args: LogArgument[]): void {
     if (this.isDevelopment) {
       console.info('[INFO]', ...args)
     }
   }
 
-  warn(...args: any[]): void {
+  warn(...args: LogArgument[]): void {
     // Warnings are shown in both dev and prod
     console.warn('[WARN]', ...args)
   }
 
-  error(...args: any[]): void {
+  error(...args: LogArgument[]): void {
     // Errors are always shown
     console.error('[ERROR]', ...args)
     
@@ -41,7 +43,7 @@ class Logger implements LogLevel {
     }
   }
 
-  private sendToMonitoring(args: any[]): void {
+  private sendToMonitoring(args: LogArgument[]): void {
     // TODO: Integrate with error monitoring service like Sentry
     // For now, this is a placeholder
   }
@@ -60,7 +62,7 @@ class Logger implements LogLevel {
   }
 
   // Table logging for development
-  table(data: any): void {
+  table(data: object | unknown[]): void {
     if (this.isDevelopment) {
       console.table(data)
     }

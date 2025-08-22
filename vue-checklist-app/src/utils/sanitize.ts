@@ -92,7 +92,7 @@ export function sanitizePhone(phone: string): string {
 /**
  * Sanitize numeric input
  */
-export function sanitizeNumber(value: any): number | null {
+export function sanitizeNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === '') {
     return null
   }
@@ -156,7 +156,7 @@ export function sanitizeSQL(input: string): string {
 /**
  * Sanitize form data object
  */
-export function sanitizeFormData<T extends Record<string, any>>(
+export function sanitizeFormData<T extends Record<string, unknown>>(
   data: T,
   options: {
     allowHTML?: boolean
@@ -174,21 +174,21 @@ export function sanitizeFormData<T extends Record<string, any>>(
     } else if (typeof value === 'string') {
       // Special handling for specific field types
       if (key === 'email') {
-        sanitized[key as keyof T] = sanitizeEmail(value) as any
+        sanitized[key as keyof T] = sanitizeEmail(value) as T[keyof T]
       } else if (key === 'phone' || key === 'tel') {
-        sanitized[key as keyof T] = sanitizePhone(value) as any
+        sanitized[key as keyof T] = sanitizePhone(value) as T[keyof T]
       } else if (key === 'url' || key === 'website') {
-        sanitized[key as keyof T] = sanitizeURL(value) as any
+        sanitized[key as keyof T] = sanitizeURL(value) as T[keyof T]
       } else if (options.allowHTML) {
-        sanitized[key as keyof T] = sanitizeHTML(value) as any
+        sanitized[key as keyof T] = sanitizeHTML(value) as T[keyof T]
       } else {
-        sanitized[key as keyof T] = sanitizeInput(value) as any
+        sanitized[key as keyof T] = sanitizeInput(value) as T[keyof T]
       }
     } else if (typeof value === 'number') {
-      sanitized[key as keyof T] = sanitizeNumber(value) as any
+      sanitized[key as keyof T] = sanitizeNumber(value) as T[keyof T]
     } else if (typeof value === 'object') {
       // Recursively sanitize nested objects
-      sanitized[key as keyof T] = sanitizeFormData(value, options) as any
+      sanitized[key as keyof T] = sanitizeFormData(value, options) as T[keyof T]
     } else {
       sanitized[key as keyof T] = value
     }
@@ -200,7 +200,7 @@ export function sanitizeFormData<T extends Record<string, any>>(
 /**
  * Create a sanitized copy of an object with only allowed keys
  */
-export function sanitizeObject<T extends Record<string, any>>(
+export function sanitizeObject<T extends Record<string, unknown>>(
   obj: T,
   allowedKeys: Array<keyof T>
 ): Partial<T> {

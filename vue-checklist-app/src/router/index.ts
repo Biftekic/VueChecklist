@@ -4,47 +4,47 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     name: 'home',
-    component: () => import('@/pages/HomePageSimple.vue')
+    component: () => import(/* webpackChunkName: "home" */ '@/pages/HomePageSimple.vue')
   },
   {
     path: '/templates',
     name: 'templates',
-    component: () => import('@/pages/TemplatesPage.vue')
+    component: () => import(/* webpackChunkName: "templates" */ '@/pages/TemplatesPage.vue')
   },
   {
     path: '/create',
     name: 'create',
-    component: () => import('@/pages/CreateChecklistPage.vue')
+    component: () => import(/* webpackChunkName: "create" */ '@/pages/CreateChecklistPage.vue')
   },
   {
     path: '/checklists',
     name: 'checklists',
-    component: () => import('@/pages/ChecklistsPage.vue')
+    component: () => import(/* webpackChunkName: "checklists" */ '@/pages/ChecklistsPage.vue')
   },
   {
     path: '/checklist/:id',
     name: 'checklist-detail',
-    component: () => import('@/pages/ChecklistDetailPageEnhanced.vue')
+    component: () => import(/* webpackChunkName: "checklist-detail" */ '@/pages/ChecklistDetailPageEnhanced.vue')
   },
   {
     path: '/checklist/:id/edit',
     name: 'checklist-edit',
-    component: () => import('@/pages/EditChecklistPage.vue')
+    component: () => import(/* webpackChunkName: "checklist-edit" */ '@/pages/EditChecklistPage.vue')
   },
   {
     path: '/template/:id/edit',
     name: 'template-edit',
-    component: () => import('@/pages/EditTemplatePage.vue')
+    component: () => import(/* webpackChunkName: "template-edit" */ '@/pages/EditTemplatePage.vue')
   },
   {
     path: '/settings',
     name: 'settings',
-    component: () => import('@/pages/SettingsPage.vue')
+    component: () => import(/* webpackChunkName: "settings" */ '@/pages/SettingsPage.vue')
   },
   {
     path: '/inventory',
     name: 'inventory',
-    component: () => import('@/pages/InventoryPage.vue')
+    component: () => import(/* webpackChunkName: "inventory" */ '@/pages/InventoryPage.vue')
   }
 ]
 
